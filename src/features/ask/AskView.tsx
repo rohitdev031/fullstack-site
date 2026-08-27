@@ -1,0 +1,104 @@
+import { useAskChat } from './hooks/useAskChat';
+import { useChatSuggestions } from './hooks/useChatSuggestions';
+import { AskControls } from './components/AskControls';
+import { AskEmptyState } from './components/AskEmptyState';
+import { ChatMessageList } from './components/ChatMessageList';
+import { ChatComposer } from './components/ChatComposer';
+import { AskSidebar } from './components/AskSidebar';
+import { FilePreviewModal } from './components/FilePreviewModal';
+
+export function AskView() {
+  const { suggestions, error: suggestionsError } = useChatSuggestions();
+
+  const {
+    prompt,
+    setPrompt,
+    messages,
+    attachedFile,
+    setAttachedFile,
+    responseQuality,
+    setResponseQuality,
+    fileAccept,
+    isPreviewOpen,
+    setIsPreviewOpen,
+    scrollRef,
+    fileInputRef,
+    handleFileChange,
+    triggerFileInput,
+    handleSubmit,
+    handleKeyDown,
+    currentModel,
+    webSearchEnabled,
+    setWebSearchEnabled
+  } = useAskChat();
+
+  return (
+    <div className="max-w-[1600px] w-full mx-auto flex flex-col xl:flex-row gap-8 pb-10 h-[calc(100vh-6rem)]">
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col h-full relative pr-2">
+
+        {/* Desktop Header */}
+        <div className="hidden md:block shrink-0 mb-4">
+          <h1 className="text-2xl font-bold mb-1 tracking-tight">Ask</h1>
+          <p className="text-muted-foreground text-[14px]">Ask anything. Get detailed answers from the best AI models.</p>
+        </div>
+
+        <AskControls
+          currentModel={currentModel}
+          webSearchEnabled={webSearchEnabled}
+          setWebSearchEnabled={setWebSearchEnabled}
+          responseQuality={responseQuality}
+          setResponseQuality={setResponseQuality}
+        />
+
+        {/* Scrollable Chat Area */}
+        <div
+          ref={scrollRef}
+          className="flex-1 overflow-y-auto scrollbar-hide flex flex-col pb-44"
+        >
+          {messages.length === 0 ? (
+            <AskEmptyState
+              suggestions={suggestions}
+              error={suggestionsError}
+              onSuggestionClick={(text) => handleSubmit(text)}
+            />
+          ) : (
+            <ChatMessageList
+              messages={messages}
+              currentModel={currentModel}
+            />
+          )}
+        </div>
+
+        <ChatComposer
+          prompt={prompt}
+          setPrompt={setPrompt}
+          attachedFile={attachedFile}
+          setAttachedFile={setAttachedFile}
+          fileInputRef={fileInputRef}
+          handleFileChange={handleFileChange}
+          fileAccept={fileAccept}
+          triggerFileInput={triggerFileInput}
+          setIsPreviewOpen={setIsPreviewOpen}
+          handleKeyDown={handleKeyDown}
+          handleSubmit={handleSubmit}
+          currentModel={currentModel}
+          webSearchEnabled={webSearchEnabled}
+          setWebSearchEnabled={setWebSearchEnabled}
+        />
+
+      </div>
+
+      <AskSidebar currentModel={currentModel} />
+
+      {isPreviewOpen && attachedFile && (
+        <FilePreviewModal
+          attachedFile={attachedFile}
+          onClose={() => setIsPreviewOpen(false)}
+        />
+      )}
+
+    </div>
+  );
+}
