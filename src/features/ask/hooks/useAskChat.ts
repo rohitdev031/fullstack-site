@@ -1,15 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
-import { useAppContext } from '@/context/AppContext';
+import { useAppContext } from '@/context/useAppContext';
 import { chatService } from '@/services/chatService';
-import { type Message } from '../types';
+import { type Message, type ResponseQuality } from '../types';
 
 export function useAskChat() {
-  const { currentModel, webSearchEnabled, setWebSearchEnabled } = useAppContext();
+  const { currentModel, setCurrentModel, webSearchEnabled, setWebSearchEnabled } = useAppContext();
 
   const [prompt, setPrompt] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [attachedFile, setAttachedFile] = useState<string | null>(null);
-  const [responseQuality, setResponseQuality] = useState<'Fast' | 'Balanced' | 'Best'>('Balanced');
+  const [responseQuality, setResponseQuality] = useState<ResponseQuality>('Balanced');
   const [fileAccept, setFileAccept] = useState<string>('*/*');
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
@@ -108,6 +108,7 @@ export function useAskChat() {
     handleSubmit,
     handleKeyDown,
     currentModel,
+    setCurrentModel,
     webSearchEnabled,
     setWebSearchEnabled
   };

@@ -10,24 +10,13 @@ import type { ChatHistoryItem } from '@/services/chatService';
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [history, setHistory] = useState<ChatHistoryItem[]>([]);
-  const [historyError, setHistoryError] = useState(false);
 
   useEffect(() => {
-    let isMounted = true;
-
     const fetchHistory = async () => {
-      try {
-        const data = await chatService.getChatHistory();
-        if (isMounted) setHistory(Array.isArray(data) ? data : []);
-      } catch {
-        if (isMounted) setHistoryError(true);
-      }
+      const data = await chatService.getChatHistory();
+      setHistory(data);
     };
     fetchHistory();
-
-    return () => {
-      isMounted = false;
-    };
   }, []);
 
   return (
@@ -79,7 +68,6 @@ export function Sidebar() {
           <div className="mt-4 pt-6 border-t border-sidebar-border/30 mb-2 animate-in fade-in duration-500">
             <h4 className="text-xs font-semibold text-sidebar-foreground/50 mb-3 px-7">History</h4>
             <div className="flex flex-col gap-0.5">
-              {historyError && <p className="px-7 py-2 text-xs text-sidebar-foreground/60">Unable to load history.</p>}
               {history.map((chat, i) => (
                 <div key={chat.id} className={`text-sm py-3 cursor-pointer flex items-center gap-3 overflow-hidden transition-colors ${i === 0 ? 'bg-primary/20 text-white border-l-4 border-primary pl-6 pr-4 font-medium' : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/40 hover:text-white border-l-4 border-transparent pl-6 pr-4'}`}>
                   <MessageSquare className="w-4 h-4 shrink-0" />

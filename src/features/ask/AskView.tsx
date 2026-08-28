@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { useAskChat } from './hooks/useAskChat';
 import { useChatSuggestions } from './hooks/useChatSuggestions';
 import { AskControls } from './components/AskControls';
@@ -8,6 +9,7 @@ import { AskSidebar } from './components/AskSidebar';
 import { FilePreviewModal } from './components/FilePreviewModal';
 
 export function AskView() {
+  const navigate = useNavigate();
   const { suggestions, error: suggestionsError } = useChatSuggestions();
 
   const {
@@ -28,6 +30,7 @@ export function AskView() {
     handleSubmit,
     handleKeyDown,
     currentModel,
+    setCurrentModel,
     webSearchEnabled,
     setWebSearchEnabled
   } = useAskChat();
@@ -46,6 +49,7 @@ export function AskView() {
 
         <AskControls
           currentModel={currentModel}
+          setCurrentModel={setCurrentModel}
           webSearchEnabled={webSearchEnabled}
           setWebSearchEnabled={setWebSearchEnabled}
           responseQuality={responseQuality}
@@ -90,7 +94,14 @@ export function AskView() {
 
       </div>
 
-      <AskSidebar currentModel={currentModel} />
+      <AskSidebar 
+        currentModel={currentModel} 
+        onAnalyzeDocument={() => triggerFileInput('*/*')}
+        onWriteContent={() => setPrompt("Help me write a ")}
+        onCompareModels={() => navigate('/compare')}
+        onVerifyAnswer={() => setPrompt("Verify if this is correct: ")}
+        onToggleWebSearch={() => setWebSearchEnabled(!webSearchEnabled)}
+      />
 
       {isPreviewOpen && attachedFile && (
         <FilePreviewModal

@@ -42,6 +42,13 @@ const MOCK_AI_RESPONSE = "This is a mock response from the server. When the back
 // SERVICE METHODS
 // ----------------------------------------------------------------------
 
+export interface SendMessageOptions {
+  currentModel?: string;
+  webSearchEnabled?: boolean;
+  responseQuality?: string;
+  attachedFile?: string | null;
+}
+
 export const chatService = {
   /**
    * Fetches the user's recent chat history for the sidebar.
@@ -57,10 +64,12 @@ export const chatService = {
     return apiClient.get('/api/chats/suggestions', MOCK_SUGGESTIONS);
   },
 
+
+
   /**
    * Sends a new message to the AI and gets a response.
    */
-  sendMessage: async (message: string, options?: any): Promise<ChatMessage> => {
+  sendMessage: async (message: string, options?: SendMessageOptions): Promise<ChatMessage> => {
     const responsePayload: ChatMessage = {
       id: Date.now().toString(),
       role: 'ai',

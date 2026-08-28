@@ -10,24 +10,13 @@ import type { ChatHistoryItem } from '@/services/chatService';
 
 export function MobileNav() {
   const [history, setHistory] = useState<ChatHistoryItem[]>([]);
-  const [historyError, setHistoryError] = useState(false);
 
   useEffect(() => {
-    let isMounted = true;
-
     const fetchHistory = async () => {
-      try {
-        const data = await chatService.getChatHistory();
-        if (isMounted) setHistory(Array.isArray(data) ? data : []);
-      } catch {
-        if (isMounted) setHistoryError(true);
-      }
+      const data = await chatService.getChatHistory();
+      setHistory(data);
     };
     fetchHistory();
-
-    return () => {
-      isMounted = false;
-    };
   }, []);
 
   return (
@@ -79,7 +68,6 @@ export function MobileNav() {
                   <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Recent Chats</h3>
                 </div>
                 <div className="flex flex-col gap-0.5">
-                  {historyError && <p className="px-3 py-2 text-xs text-muted-foreground">Unable to load history.</p>}
                   {history.map((chat) => (
                     <Button
                       key={chat.id}
