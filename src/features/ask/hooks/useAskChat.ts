@@ -1,10 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
-import { useAppContext } from '@/context/useAppContext';
+import { useAppContext } from '@/context/AppContext';
 import { chatService } from '@/services/chatService';
 import { type Message, type ResponseQuality } from '../types';
 
 export function useAskChat() {
-  const { currentModel, setCurrentModel, webSearchEnabled, setWebSearchEnabled } = useAppContext();
+  const { 
+    currentChatId, setCurrentChatId, 
+    currentModel, setCurrentModel, 
+    webSearchEnabled, setWebSearchEnabled,
+    setHistory
+  } = useAppContext();
 
   const [prompt, setPrompt] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
@@ -15,6 +20,26 @@ export function useAskChat() {
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch history when currentChatId changes
+  useEffect(() => {
+    if (currentChatId === null) {
+      setMessages([]);
+      return;
+    }
+
+    const loadOldChat = async () => {
+      try {
+        const oldMessages = await chatService.getChatMessages(currentChatId);
+        // Cast the backend messages to our local Message type
+        setMessages(oldMessages as Message[]);
+      } catch (error) {
+        console.error("Failed to load chat history:", error);
+      }
+    };
+
+    loadOldChat();
+  }, [currentChatId]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -58,18 +83,28 @@ export function useAskChat() {
     setAttachedFile(null);
 
     try {
-      const response = await chatService.sendMessage(textToSubmit, {
+      const { message, chatId } = await chatService.sendMessage(textToSubmit, {
+        chatId: currentChatId,
         currentModel,
         webSearchEnabled,
         responseQuality,
         attachedFile: fileName,
       });
+
+      // If it was a new chat, the backend generated an ID. We update our global state.
+      if (currentChatId === null) {
+        setCurrentChatId(chatId);
+        // Refresh global history so the sidebar updates instantly
+        const updatedHistory = await chatService.getChatHistory();
+        setHistory(updatedHistory);
+      }
+
       setMessages((prev) => prev.map(msg => {
         if (msg.id === aiMsgId) {
           return {
             ...msg,
             isLoading: false,
-            content: response.content,
+            content: message.content,
           };
         }
         return msg;
@@ -80,6 +115,38 @@ export function useAskChat() {
         isLoading: false,
         content: 'Unable to get a response right now. Please try again.',
       } : msg));
+    }
+  };
+
+  const handleRegenerate = async (messageId: string, type: 'standard' | 'improve') => {
+    // Set message to loading state
+    setMessages(prev => prev.map(msg => 
+      msg.id === messageId ? { ...msg, isLoading: true, content: '' } : msg
+    ));
+
+    try {
+      const regeneratedMsg = await chatService.regenerateMessage(messageId, type, {
+        chatId: currentChatId,
+        currentModel,
+        webSearchEnabled,
+        responseQuality,
+      });
+
+      setMessages(prev => prev.map(msg => 
+        msg.id === messageId ? {
+          ...msg,
+          isLoading: false,
+          content: regeneratedMsg.content,
+        } : msg
+      ));
+    } catch {
+      setMessages(prev => prev.map(msg => 
+        msg.id === messageId ? {
+          ...msg,
+          isLoading: false,
+          content: 'Unable to regenerate right now. Please try again.',
+        } : msg
+      ));
     }
   };
 
@@ -106,6 +173,7 @@ export function useAskChat() {
     handleFileChange,
     triggerFileInput,
     handleSubmit,
+    handleRegenerate,
     handleKeyDown,
     currentModel,
     setCurrentModel,

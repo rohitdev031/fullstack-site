@@ -1,4 +1,3 @@
-/*import { apiClient } from './api';  */
 
 export interface SearchResult {
   id: string;
@@ -21,7 +20,7 @@ export const searchService = {
    */
   search: async (query: string): Promise<SearchResult[]> => {
     if (!query.trim()) return [];
-
+    
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 800));
 

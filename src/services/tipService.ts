@@ -1,7 +1,4 @@
 
-
-/*import { apiClient } from './api';  */
-
 export interface Tip {
   id: string;
   title: string;

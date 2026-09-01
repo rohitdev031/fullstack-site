@@ -1,30 +1,23 @@
-const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '');
+/**
+ * Base API Service (Mock)
+ * This file serves as the abstraction layer for API calls.
+ * When the backend is ready, the backend developer will replace these mock delays
+ * with actual fetch/axios requests.
+ */
 
-async function request<T>(endpoint: string, init: RequestInit, fallback: T): Promise<T> {
-  if (!apiBaseUrl) return fallback;
-
-  const response = await fetch(`${apiBaseUrl}${endpoint}`, {
-    ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...init.headers,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`API request failed: ${response.status}`);
-  }
-
-  return response.json() as Promise<T>;
-}
+// Simulated network delay
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const apiClient = {
-  get: <T>(endpoint: string, fallback: T): Promise<T> =>
-    request(endpoint, { method: 'GET' }, fallback),
-
-  post: <T>(endpoint: string, body: unknown, fallback: T): Promise<T> =>
-    request(endpoint, {
-      method: 'POST',
-      body: JSON.stringify(body),
-    }, fallback),
+  get: async <T>(endpoint: string, mockData: T): Promise<T> => {
+    console.log(`[MOCK GET] ${endpoint}`);
+    await delay(500); // Simulate network latency
+    return mockData;
+  },
+  
+  post: async <T>(endpoint: string, body: any, mockResponse: T): Promise<T> => {
+    console.log(`[MOCK POST] ${endpoint}`, body);
+    await delay(800); // Simulate network latency
+    return mockResponse;
+  }
 };

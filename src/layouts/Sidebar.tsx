@@ -6,22 +6,51 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { chatService } from '@/services/chatService';
 import type { ChatHistoryItem } from '@/services/chatService';
+import { useAppContext } from '@/context/AppContext';
 
 export function Sidebar() {
+  const { currentChatId, setCurrentChatId, history, setHistory } = useAppContext();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [history, setHistory] = useState<ChatHistoryItem[]>([]);
+  const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
   useEffect(() => {
-    const fetchHistory = async () => {
+    // Only fetch initially if history is empty
+    if (history.length === 0) {
+      const fetchHistory = async () => {
+        const data = await chatService.getChatHistory();
+        setHistory(data);
+      };
+      fetchHistory();
+    }
+  }, [history.length, setHistory]);
+
+  const handleToggleHistory = async () => {
+    if (isHistoryExpanded) {
+      setIsHistoryExpanded(false);
+      // Optional: Refetch short history to collapse back
       const data = await chatService.getChatHistory();
       setHistory(data);
-    };
-    fetchHistory();
-  }, []);
+    } else {
+      setIsLoadingHistory(true);
+      const fullData = await chatService.getFullChatHistory();
+      setHistory(fullData);
+      setIsHistoryExpanded(true);
+      setIsLoadingHistory(false);
+    }
+  };
+
+  // Group history by date
+  const groupedHistory = history.reduce((groups, chat) => {
+    const dateGroup = chat.date || 'Older';
+    if (!groups[dateGroup]) groups[dateGroup] = [];
+    groups[dateGroup].push(chat);
+    return groups;
+  }, {} as Record<string, ChatHistoryItem[]>);
 
   return (
     <aside className={`hidden md:flex flex-col ${isCollapsed ? 'w-20' : 'w-64'} transition-all duration-300 ease-in-out bg-sidebar text-sidebar-foreground border-r border-sidebar-border h-screen sticky top-0 z-50 overflow-hidden`}>
-
+      
       {/* Logo & Toggle */}
       <div className="p-4 flex flex-col gap-5 mb-2 border-b border-sidebar-border/30 pb-6">
         <div className={`flex items-center ${isCollapsed ? 'flex-col gap-6 pt-2' : 'justify-between px-1'}`}>
@@ -29,14 +58,14 @@ export function Sidebar() {
             <img src="/logo.jpg" alt="Aether" className="w-7 h-7 rounded-md object-cover shrink-0" />
             {!isCollapsed && <span className="whitespace-nowrap animate-in fade-in duration-300">Aether AI</span>}
           </div>
-          <button
+          <button 
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors shrink-0"
           >
             {isCollapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
           </button>
         </div>
-        <Link to="/ask" className={isCollapsed ? "mx-auto" : ""}>
+        <Link to="/ask" className={isCollapsed ? "mx-auto" : ""} onClick={() => setCurrentChatId(null)}>
           <Button className={`bg-linear-to-r from-blue-500 to-purple-600 hover:opacity-90 text-white border-0 shadow-md h-11 rounded-xl text-sm font-semibold transition-all duration-300 ${isCollapsed ? 'w-11 px-0 justify-center' : 'w-full justify-start gap-3 px-4'}`}>
             <Plus className="w-5 h-5 shrink-0" />
             {!isCollapsed && <span className="whitespace-nowrap">New Conversation</span>}
@@ -52,9 +81,10 @@ export function Sidebar() {
             to={link.href}
             title={isCollapsed ? link.name : undefined}
             className={({ isActive }) =>
-              `flex items-center transition-all duration-200 ${isCollapsed ? 'justify-center mx-3 py-3 rounded-xl' : 'gap-3 pl-6 pr-4 py-3 border-l-4'} ${isActive
-                ? (isCollapsed ? 'bg-sidebar-accent text-white' : 'bg-sidebar-accent/50 text-white border-primary')
-                : (isCollapsed ? 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-white' : 'border-transparent text-sidebar-foreground/80 hover:bg-sidebar-accent/40 hover:text-white')
+              `flex items-center transition-all duration-200 ${isCollapsed ? 'justify-center mx-3 py-3 rounded-xl' : 'gap-3 pl-6 pr-4 py-3 border-l-4'} ${
+                isActive
+                  ? (isCollapsed ? 'bg-sidebar-accent text-white' : 'bg-sidebar-accent/50 text-white border-primary')
+                  : (isCollapsed ? 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-white' : 'border-transparent text-sidebar-foreground/80 hover:bg-sidebar-accent/40 hover:text-white')
               }`
             }
           >
@@ -65,17 +95,34 @@ export function Sidebar() {
 
         {/* History Section */}
         {!isCollapsed && (
-          <div className="mt-4 pt-6 border-t border-sidebar-border/30 mb-2 animate-in fade-in duration-500">
+          <div className="mt-4 pt-6 border-t border-sidebar-border/30 mb-2 animate-in fade-in duration-500 flex flex-col h-full">
             <h4 className="text-xs font-semibold text-sidebar-foreground/50 mb-3 px-7">History</h4>
-            <div className="flex flex-col gap-0.5">
-              {history.map((chat, i) => (
-                <div key={chat.id} className={`text-sm py-3 cursor-pointer flex items-center gap-3 overflow-hidden transition-colors ${i === 0 ? 'bg-primary/20 text-white border-l-4 border-primary pl-6 pr-4 font-medium' : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/40 hover:text-white border-l-4 border-transparent pl-6 pr-4'}`}>
-                  <MessageSquare className="w-4 h-4 shrink-0" />
-                  <span className="truncate">{chat.title}</span>
+            <div className="flex flex-col gap-5 overflow-y-auto scrollbar-hide px-2">
+              
+              {Object.entries(groupedHistory).map(([dateLabel, chats]) => (
+                <div key={dateLabel} className="flex flex-col gap-0.5">
+                  <span className="text-[11px] font-semibold text-sidebar-foreground/40 px-5 mb-1 tracking-wider uppercase">{dateLabel}</span>
+                  {chats.map((chat) => {
+                    const isActiveChat = chat.id === currentChatId;
+                    return (
+                      <div 
+                        key={chat.id} 
+                        onClick={() => setCurrentChatId(chat.id)}
+                        className={`text-sm py-2.5 mx-2 rounded-xl cursor-pointer flex items-center gap-3 overflow-hidden transition-colors ${isActiveChat ? 'bg-primary/20 text-white font-medium' : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/40 hover:text-white'} pl-3 pr-4`}
+                      >
+                        <MessageSquare className="w-4 h-4 shrink-0 opacity-70" />
+                        <span className="truncate">{chat.title}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               ))}
-              <div className="text-xs text-sidebar-foreground/50 hover:text-white pl-13 py-2.5 mt-1 cursor-pointer transition-colors font-medium">
-                View All
+
+              <div 
+                onClick={handleToggleHistory}
+                className={`text-xs text-sidebar-foreground/50 hover:text-white pl-5 py-2.5 mx-2 mt-1 rounded-xl hover:bg-sidebar-accent/30 cursor-pointer transition-colors font-medium flex items-center gap-2 ${isLoadingHistory ? 'opacity-50 pointer-events-none' : ''}`}
+              >
+                {isLoadingHistory ? 'Loading...' : isHistoryExpanded ? 'Show Less' : 'View All'}
               </div>
             </div>
           </div>
@@ -84,7 +131,7 @@ export function Sidebar() {
 
       {/* Bottom Actions */}
       <div className={`p-4 flex flex-col gap-4 border-t border-sidebar-border/30 ${isCollapsed ? 'items-center' : ''}`}>
-
+        
         {/* User Profile & Settings */}
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-2 pt-2'}`}>
           <div className="flex items-center gap-3">

@@ -28,6 +28,7 @@ export function AskView() {
     handleFileChange,
     triggerFileInput,
     handleSubmit,
+    handleRegenerate,
     handleKeyDown,
     currentModel,
     setCurrentModel,
@@ -71,6 +72,7 @@ export function AskView() {
             <ChatMessageList
               messages={messages}
               currentModel={currentModel}
+              onRegenerate={handleRegenerate}
             />
           )}
         </div>

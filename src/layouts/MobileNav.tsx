@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { Menu, Plus, Bell, MessageSquare } from 'lucide-react';
 import { mainNavLinks } from './NavigationLinks';
 import { Button } from '@/components/ui/button';
@@ -7,26 +7,71 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { chatService } from '@/services/chatService';
 import type { ChatHistoryItem } from '@/services/chatService';
+import { useAppContext } from '@/context/AppContext';
 
 export function MobileNav() {
-  const [history, setHistory] = useState<ChatHistoryItem[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const navigate = useNavigate();
+  const { currentChatId, setCurrentChatId, history, setHistory } = useAppContext();
 
   useEffect(() => {
-    const fetchHistory = async () => {
+    // Only fetch initially if history is empty
+    if (history.length === 0) {
+      const fetchHistory = async () => {
+        const data = await chatService.getChatHistory();
+        setHistory(data);
+      };
+      fetchHistory();
+    }
+  }, [history.length, setHistory]);
+
+  const handleNewConversation = () => {
+    setCurrentChatId(null);
+    navigate('/ask');
+    setIsOpen(false);
+  };
+
+  const handleHistoryItemClick = (chatId: string) => {
+    setCurrentChatId(chatId);
+    navigate('/ask');
+    setIsOpen(false);
+  };
+
+  const handleToggleHistory = async () => {
+    if (isHistoryExpanded) {
+      setIsHistoryExpanded(false);
+      // Fetch short history to collapse back
       const data = await chatService.getChatHistory();
       setHistory(data);
-    };
-    fetchHistory();
-  }, []);
+    } else {
+      setIsLoadingHistory(true);
+      const fullData = await chatService.getFullChatHistory();
+      setHistory(fullData);
+      setIsHistoryExpanded(true);
+      setIsLoadingHistory(false);
+    }
+  };
+
+  // Group history by date
+  const groupedHistory = history.reduce((groups, chat) => {
+    const dateGroup = chat.date || 'Older';
+    if (!groups[dateGroup]) groups[dateGroup] = [];
+    groups[dateGroup].push(chat);
+    return groups;
+  }, {} as Record<string, ChatHistoryItem[]>);
 
   return (
     <header className="md:hidden flex items-center justify-between px-4 border-b bg-background sticky top-0 z-50 h-14">
 
       {/* Left: Hamburger */}
       <div className="flex-1 flex justify-start">
-        <Sheet>
-          <SheetTrigger render={<Button variant="ghost" size="icon" className="shrink-0 -ml-2" />}>
-            <Menu className="w-6 h-6 text-foreground" />
+        <Sheet open={isOpen} onOpenChange={setIsOpen}>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" className="shrink-0 -ml-2">
+              <Menu className="w-6 h-6 text-foreground" />
+            </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-[85%] sm:w-[320px] flex flex-col p-0 bg-background border-r-border">
             <SheetHeader className="p-4 text-center border-b border-border/50 relative flex flex-row items-center justify-center">
@@ -37,7 +82,10 @@ export function MobileNav() {
             </SheetHeader>
 
             <div className="p-4">
-              <Button className="w-full justify-start gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">
+              <Button
+                onClick={handleNewConversation}
+                className="w-full justify-start gap-2 bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
                 <Plus className="w-4 h-4" />
                 New Conversation
               </Button>
@@ -48,6 +96,7 @@ export function MobileNav() {
                 <NavLink
                   key={link.name}
                   to={link.href}
+                  onClick={() => setIsOpen(false)}
                   className={({ isActive }) =>
                     `flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive
                       ? 'bg-sidebar text-sidebar-foreground shadow-sm'
@@ -63,23 +112,39 @@ export function MobileNav() {
               <div className="my-4 border-t border-border/50"></div>
 
               {/* Recent Chats Section */}
-              <div className="mt-4 pt-4 border-t border-border/50">
+              <div className="mt-4 pt-4 border-t border-border/50 flex flex-col h-full">
                 <div className="px-3 mb-2 flex items-center justify-between">
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Recent Chats</h3>
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">History</h3>
                 </div>
-                <div className="flex flex-col gap-0.5">
-                  {history.map((chat) => (
-                    <Button
-                      key={chat.id}
-                      variant="ghost"
-                      className="w-full justify-start h-auto py-2.5 px-3 font-normal text-sm group"
-                    >
-                      <MessageSquare className="w-4 h-4 mr-3 text-muted-foreground group-hover:text-foreground shrink-0" />
-                      <div className="flex flex-col items-start truncate">
-                        <span className="truncate w-full text-left">{chat.title}</span>
-                      </div>
-                    </Button>
+                <div className="flex flex-col gap-4 overflow-y-auto pb-4 px-1">
+                  {Object.entries(groupedHistory).map(([dateLabel, chats]) => (
+                    <div key={dateLabel} className="flex flex-col gap-0.5">
+                      <span className="text-[11px] font-semibold text-muted-foreground/70 px-2 mb-1 tracking-wider uppercase">{dateLabel}</span>
+                      {chats.map((chat) => {
+                        const isActiveChat = chat.id === currentChatId;
+                        return (
+                          <Button
+                            key={chat.id}
+                            variant="ghost"
+                            onClick={() => handleHistoryItemClick(chat.id)}
+                            className={`w-full justify-start h-auto py-2.5 px-3 font-normal text-sm group ${isActiveChat ? 'bg-primary/10 text-primary font-medium' : 'text-foreground/80 hover:text-foreground'}`}
+                          >
+                            <MessageSquare className={`w-4 h-4 mr-3 shrink-0 ${isActiveChat ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
+                            <div className="flex flex-col items-start truncate">
+                              <span className="truncate w-full text-left">{chat.title}</span>
+                            </div>
+                          </Button>
+                        );
+                      })}
+                    </div>
                   ))}
+
+                  <div
+                    onClick={handleToggleHistory}
+                    className={`text-xs text-muted-foreground hover:text-foreground px-4 py-2 mt-1 rounded-md hover:bg-muted/50 cursor-pointer transition-colors font-medium flex items-center gap-2 ${isLoadingHistory ? 'opacity-50 pointer-events-none' : ''}`}
+                  >
+                    {isLoadingHistory ? 'Loading...' : isHistoryExpanded ? 'Show Less' : 'View All'}
+                  </div>
                 </div>
               </div>
             </div>

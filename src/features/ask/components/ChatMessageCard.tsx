@@ -1,15 +1,39 @@
-import { Sparkles, Copy, RotateCcw, ThumbsUp, ThumbsDown, MoreHorizontal, Target, ChevronDown } from 'lucide-react';
+import { useState } from 'react';
+import { Sparkles, Copy, RotateCcw, ThumbsUp, ThumbsDown, MoreHorizontal, Target, ChevronDown, ChevronUp, Check, Link } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { chatService } from '@/services/chatService';
 import { type Message } from '../types';
 
 type ChatMessageCardProps = {
   message: Message;
   currentModel: string;
+  onRegenerate: (messageId: string, type: 'standard' | 'improve') => void;
 };
 
-export function ChatMessageCard({ message, currentModel }: ChatMessageCardProps) {
+export function ChatMessageCard({ message, currentModel, onRegenerate }: ChatMessageCardProps) {
+  const [isCopied, setIsCopied] = useState(false);
+  const [rating, setRating] = useState<'up' | 'down' | null>(null);
+  const [showSources, setShowSources] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(message.content);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
+  };
+
+  const handleRate = async (type: 'up' | 'down') => {
+    // If they click the same button again, un-rate it. Otherwise, set it.
+    const newRating = rating === type ? null : type;
+    setRating(newRating);
+    
+    // In a real app, you might pass 'none' or null to remove the rating.
+    if (newRating) {
+      await chatService.rateMessage(message.id, newRating);
+    }
+  };
+
   if (message.role === 'user') {
     return (
       <div className="bg-foreground text-background px-6 py-4 rounded-3xl rounded-tr-sm max-w-[85%] md:max-w-[75%] shadow-sm mt-4">
@@ -46,31 +70,68 @@ export function ChatMessageCard({ message, currentModel }: ChatMessageCardProps)
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-3 pt-6 mt-4 border-t border-border/50">
-              <Button variant="outline" size="sm" className="h-9 text-xs rounded-lg font-semibold border-border/60 shadow-xs"><Copy className="w-3.5 h-3.5 mr-2" /> Copy</Button>
-              <Button variant="outline" size="sm" className="h-9 text-xs rounded-lg font-semibold border-border/60 shadow-xs"><RotateCcw className="w-3.5 h-3.5 mr-2" /> Regenerate</Button>
-              <Button variant="outline" size="sm" className="h-9 text-xs rounded-lg font-semibold border-border/60 shadow-xs"><Sparkles className="w-3.5 h-3.5 mr-2" /> Improve Answer</Button>
+            <div className="flex flex-wrap items-center gap-3 pt-6 mt-4 border-t border-border/50">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleCopy}
+                className={`h-9 text-xs rounded-lg font-semibold border-border/60 shadow-xs transition-colors ${isCopied ? 'bg-green-50 dark:bg-green-900/20 text-green-600 border-green-200 dark:border-green-800' : ''}`}
+              >
+                {isCopied ? <Check className="w-3.5 h-3.5 mr-2" /> : <Copy className="w-3.5 h-3.5 mr-2" />} 
+                {isCopied ? 'Copied!' : 'Copy'}
+              </Button>
+              <Button onClick={() => onRegenerate(message.id, 'standard')} variant="outline" size="sm" className="h-9 text-xs rounded-lg font-semibold border-border/60 shadow-xs"><RotateCcw className="w-3.5 h-3.5 mr-2" /> Regenerate</Button>
+              <Button onClick={() => onRegenerate(message.id, 'improve')} variant="outline" size="sm" className="h-9 text-xs rounded-lg font-semibold border-border/60 shadow-xs"><Sparkles className="w-3.5 h-3.5 mr-2" /> Improve Answer</Button>
 
               <div className="ml-auto flex items-center gap-1.5">
-                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg"><ThumbsUp className="w-4 h-4 text-muted-foreground" /></Button>
-                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg"><ThumbsDown className="w-4 h-4 text-muted-foreground" /></Button>
+                <Button onClick={() => handleRate('up')} variant="ghost" size="icon" className={`h-9 w-9 rounded-lg transition-colors ${rating === 'up' ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}><ThumbsUp className="w-4 h-4" /></Button>
+                <Button onClick={() => handleRate('down')} variant="ghost" size="icon" className={`h-9 w-9 rounded-lg transition-colors ${rating === 'down' ? 'text-destructive bg-destructive/10' : 'text-muted-foreground'}`}><ThumbsDown className="w-4 h-4" /></Button>
                 <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg"><MoreHorizontal className="w-4 h-4 text-muted-foreground" /></Button>
               </div>
             </div>
 
             {/* Sources */}
-            <div className="flex items-center justify-between pt-5 mt-5 border-t border-border/50 cursor-pointer group">
-              <div className="flex items-center gap-4">
-                <span className="text-[13px] font-bold text-foreground">Sources (5)</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-full bg-[#0077b5]/10 flex items-center justify-center"><span className="text-[11px] font-bold text-[#0077b5]">in</span></div>
-                  <div className="w-7 h-7 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center"><span className="text-[11px] font-bold">W</span></div>
-                  <div className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center"><Target className="w-4 h-4 text-blue-600 dark:text-blue-400" /></div>
-                  <div className="w-7 h-7 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-400 flex items-center justify-center"><span className="text-[11px] font-bold">in</span></div>
-                  <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center"><span className="text-[11px] font-bold text-muted-foreground">+2</span></div>
+            <div className="pt-5 mt-5 border-t border-border/50">
+              <div 
+                onClick={() => setShowSources(!showSources)}
+                className="flex items-center justify-between cursor-pointer group select-none"
+              >
+                <div className="flex items-center gap-4">
+                  <span className="text-[13px] font-bold text-foreground group-hover:text-primary transition-colors">Sources (3)</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-full bg-[#0077b5]/10 flex items-center justify-center"><span className="text-[11px] font-bold text-[#0077b5]">in</span></div>
+                    <div className="w-7 h-7 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center"><span className="text-[11px] font-bold">W</span></div>
+                    <div className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center"><Target className="w-4 h-4 text-blue-600 dark:text-blue-400" /></div>
+                  </div>
                 </div>
+                {showSources ? (
+                  <ChevronUp className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                )}
               </div>
-              <ChevronDown className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+              
+              {/* Expandable Sources List */}
+              {showSources && (
+                <div className="mt-4 flex flex-col gap-2 animate-in fade-in slide-in-from-top-2">
+                  <div className="flex items-center gap-3 p-3 rounded-lg border border-border/50 hover:bg-muted/30 cursor-pointer transition-colors group/source">
+                    <div className="w-8 h-8 rounded-md bg-[#0077b5]/10 flex items-center justify-center shrink-0"><span className="text-[11px] font-bold text-[#0077b5]">in</span></div>
+                    <div className="flex flex-col overflow-hidden flex-1">
+                      <span className="text-sm font-semibold truncate group-hover/source:text-primary transition-colors">LinkedIn - React Developer Guide</span>
+                      <span className="text-xs text-muted-foreground truncate">https://linkedin.com/pulse/react-guide</span>
+                    </div>
+                    <Link className="w-4 h-4 text-muted-foreground group-hover/source:text-primary shrink-0 opacity-0 group-hover/source:opacity-100 transition-all" />
+                  </div>
+                  <div className="flex items-center gap-3 p-3 rounded-lg border border-border/50 hover:bg-muted/30 cursor-pointer transition-colors group/source">
+                    <div className="w-8 h-8 rounded-md bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0"><span className="text-[11px] font-bold">W</span></div>
+                    <div className="flex flex-col overflow-hidden flex-1">
+                      <span className="text-sm font-semibold truncate group-hover/source:text-primary transition-colors">Wikipedia - Quantum Physics</span>
+                      <span className="text-xs text-muted-foreground truncate">https://en.wikipedia.org/wiki/Quantum</span>
+                    </div>
+                    <Link className="w-4 h-4 text-muted-foreground group-hover/source:text-primary shrink-0 opacity-0 group-hover/source:opacity-100 transition-all" />
+                  </div>
+                </div>
+              )}
             </div>
           </>
         )}
