@@ -4,9 +4,9 @@ import { chatService } from '@/services/chatService';
 import { type Message, type ResponseQuality } from '../types';
 
 export function useAskChat() {
-  const { 
-    currentChatId, setCurrentChatId, 
-    currentModel, setCurrentModel, 
+  const {
+    currentChatId, setCurrentChatId,
+    currentModel, setCurrentModel,
     webSearchEnabled, setWebSearchEnabled,
     setHistory
   } = useAppContext();
@@ -23,10 +23,7 @@ export function useAskChat() {
 
   // Fetch history when currentChatId changes
   useEffect(() => {
-    if (currentChatId === null) {
-      setMessages([]);
-      return;
-    }
+    if (currentChatId === null) return;
 
     const loadOldChat = async () => {
       try {
@@ -40,6 +37,8 @@ export function useAskChat() {
 
     loadOldChat();
   }, [currentChatId]);
+
+  const visibleMessages = currentChatId === null ? [] : messages;
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -120,7 +119,7 @@ export function useAskChat() {
 
   const handleRegenerate = async (messageId: string, type: 'standard' | 'improve') => {
     // Set message to loading state
-    setMessages(prev => prev.map(msg => 
+    setMessages(prev => prev.map(msg =>
       msg.id === messageId ? { ...msg, isLoading: true, content: '' } : msg
     ));
 
@@ -132,7 +131,7 @@ export function useAskChat() {
         responseQuality,
       });
 
-      setMessages(prev => prev.map(msg => 
+      setMessages(prev => prev.map(msg =>
         msg.id === messageId ? {
           ...msg,
           isLoading: false,
@@ -140,7 +139,7 @@ export function useAskChat() {
         } : msg
       ));
     } catch {
-      setMessages(prev => prev.map(msg => 
+      setMessages(prev => prev.map(msg =>
         msg.id === messageId ? {
           ...msg,
           isLoading: false,
@@ -160,7 +159,7 @@ export function useAskChat() {
   return {
     prompt,
     setPrompt,
-    messages,
+    messages: visibleMessages,
     attachedFile,
     setAttachedFile,
     responseQuality,

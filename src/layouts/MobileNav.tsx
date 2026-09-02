@@ -68,10 +68,10 @@ export function MobileNav() {
       {/* Left: Hamburger */}
       <div className="flex-1 flex justify-start">
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="shrink-0 -ml-2">
-              <Menu className="w-6 h-6 text-foreground" />
-            </Button>
+          <SheetTrigger
+            render={<Button variant="ghost" size="icon" className="shrink-0 -ml-2" />}
+          >
+            <Menu className="w-6 h-6 text-foreground" />
           </SheetTrigger>
           <SheetContent side="left" className="w-[85%] sm:w-[320px] flex flex-col p-0 bg-background border-r-border">
             <SheetHeader className="p-4 text-center border-b border-border/50 relative flex flex-row items-center justify-center">

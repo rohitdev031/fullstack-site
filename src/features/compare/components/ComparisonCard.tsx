@@ -10,7 +10,7 @@ interface ComparisonCardProps {
   match: string;
   matchColor: string;
   content: ReactNode;
-  sources: number;
+  sources: { title: string; url: string; snippet?: string }[];
 }
 
 export function ComparisonCard({ model, icon, match, matchColor, content, sources }: ComparisonCardProps) {
@@ -49,7 +49,7 @@ export function ComparisonCard({ model, icon, match, matchColor, content, source
             <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:bg-muted/50"><ThumbsDown className="w-4 h-4" /></Button>
           </div>
           <Button variant="outline" size="sm" className="h-8 text-[11px] font-bold rounded-lg border-border/60 shadow-xs gap-1.5 hover:bg-muted/50">
-            Sources ({sources}) <ChevronDown className="w-3.5 h-3.5" />
+            Sources ({sources?.length || 0}) <ChevronDown className="w-3.5 h-3.5" />
           </Button>
         </div>
       </CardContent>

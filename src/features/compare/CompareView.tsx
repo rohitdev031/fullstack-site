@@ -12,6 +12,7 @@ export function CompareView() {
     isComparing,
     selectedModels,
     results,
+    analysis,
     handleCompare,
     removeModel,
     addModel
@@ -42,7 +43,7 @@ export function CompareView() {
       ) : (
         <>
           <ComparisonGrid selectedModels={selectedModels} results={results} />
-          <CompareAnalysis selectedModels={selectedModels} />
+          {analysis && <CompareAnalysis selectedModels={selectedModels} analysis={analysis} />}
         </>
       )}
     </div>

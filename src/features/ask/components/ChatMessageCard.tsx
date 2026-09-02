@@ -91,48 +91,43 @@ export function ChatMessageCard({ message, currentModel, onRegenerate }: ChatMes
             </div>
 
             {/* Sources */}
-            <div className="pt-5 mt-5 border-t border-border/50">
-              <div 
-                onClick={() => setShowSources(!showSources)}
-                className="flex items-center justify-between cursor-pointer group select-none"
-              >
-                <div className="flex items-center gap-4">
-                  <span className="text-[13px] font-bold text-foreground group-hover:text-primary transition-colors">Sources (3)</span>
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-full bg-[#0077b5]/10 flex items-center justify-center"><span className="text-[11px] font-bold text-[#0077b5]">in</span></div>
-                    <div className="w-7 h-7 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center"><span className="text-[11px] font-bold">W</span></div>
-                    <div className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center"><Target className="w-4 h-4 text-blue-600 dark:text-blue-400" /></div>
+            {message.sources && message.sources.length > 0 && (
+              <div className="pt-5 mt-5 border-t border-border/50">
+                <div 
+                  onClick={() => setShowSources(!showSources)}
+                  className="flex items-center justify-between cursor-pointer group select-none"
+                >
+                  <div className="flex items-center gap-4">
+                    <span className="text-[13px] font-bold text-foreground group-hover:text-primary transition-colors">Sources ({message.sources.length})</span>
+                    <div className="flex items-center gap-2">
+                      {/* Just show a generic icon for the sources summary if we want, or map the first 3 */}
+                      <div className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center"><Target className="w-4 h-4 text-blue-600 dark:text-blue-400" /></div>
+                    </div>
                   </div>
+                  {showSources ? (
+                    <ChevronUp className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                  )}
                 </div>
-                {showSources ? (
-                  <ChevronUp className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                ) : (
-                  <ChevronDown className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                
+                {/* Expandable Sources List */}
+                {showSources && (
+                  <div className="mt-4 flex flex-col gap-2 animate-in fade-in slide-in-from-top-2">
+                    {message.sources.map((source, i) => (
+                      <a href={source.url} target="_blank" rel="noopener noreferrer" key={i} className="flex items-center gap-3 p-3 rounded-lg border border-border/50 hover:bg-muted/30 cursor-pointer transition-colors group/source">
+                        <div className="w-8 h-8 rounded-md bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0"><span className="text-[11px] font-bold">{source.title.charAt(0)}</span></div>
+                        <div className="flex flex-col overflow-hidden flex-1">
+                          <span className="text-sm font-semibold truncate group-hover/source:text-primary transition-colors">{source.title}</span>
+                          <span className="text-xs text-muted-foreground truncate">{source.url}</span>
+                        </div>
+                        <Link className="w-4 h-4 text-muted-foreground group-hover/source:text-primary shrink-0 opacity-0 group-hover/source:opacity-100 transition-all" />
+                      </a>
+                    ))}
+                  </div>
                 )}
               </div>
-              
-              {/* Expandable Sources List */}
-              {showSources && (
-                <div className="mt-4 flex flex-col gap-2 animate-in fade-in slide-in-from-top-2">
-                  <div className="flex items-center gap-3 p-3 rounded-lg border border-border/50 hover:bg-muted/30 cursor-pointer transition-colors group/source">
-                    <div className="w-8 h-8 rounded-md bg-[#0077b5]/10 flex items-center justify-center shrink-0"><span className="text-[11px] font-bold text-[#0077b5]">in</span></div>
-                    <div className="flex flex-col overflow-hidden flex-1">
-                      <span className="text-sm font-semibold truncate group-hover/source:text-primary transition-colors">LinkedIn - React Developer Guide</span>
-                      <span className="text-xs text-muted-foreground truncate">https://linkedin.com/pulse/react-guide</span>
-                    </div>
-                    <Link className="w-4 h-4 text-muted-foreground group-hover/source:text-primary shrink-0 opacity-0 group-hover/source:opacity-100 transition-all" />
-                  </div>
-                  <div className="flex items-center gap-3 p-3 rounded-lg border border-border/50 hover:bg-muted/30 cursor-pointer transition-colors group/source">
-                    <div className="w-8 h-8 rounded-md bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0"><span className="text-[11px] font-bold">W</span></div>
-                    <div className="flex flex-col overflow-hidden flex-1">
-                      <span className="text-sm font-semibold truncate group-hover/source:text-primary transition-colors">Wikipedia - Quantum Physics</span>
-                      <span className="text-xs text-muted-foreground truncate">https://en.wikipedia.org/wiki/Quantum</span>
-                    </div>
-                    <Link className="w-4 h-4 text-muted-foreground group-hover/source:text-primary shrink-0 opacity-0 group-hover/source:opacity-100 transition-all" />
-                  </div>
-                </div>
-              )}
-            </div>
+            )}
           </>
         )}
       </CardContent>

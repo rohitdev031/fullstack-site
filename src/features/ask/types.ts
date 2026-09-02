@@ -15,4 +15,5 @@ export type Message = {
   role: 'user' | 'ai';
   content: string;
   isLoading?: boolean;
+  sources?: { title: string; url: string; snippet?: string }[];
 };

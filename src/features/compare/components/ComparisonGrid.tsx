@@ -38,7 +38,7 @@ export function ComparisonGrid({ selectedModels, results }: ComparisonGridProps)
             match={i === 1 ? "Excellent match" : "Good match"}
             matchColor={i === 1 ? "text-emerald-700 bg-emerald-100 dark:bg-emerald-900/40 dark:text-emerald-300" : "text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 dark:text-emerald-400"}
             content={mockContent}
-            sources={Math.floor(Math.random() * 3) + 5}
+            sources={result?.sources || []}
           />
         );
       })}

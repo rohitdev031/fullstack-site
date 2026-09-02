@@ -5,6 +5,7 @@ export interface ChatMessage {
   role: 'user' | 'ai';
   content: string;
   timestamp: string;
+  sources?: { title: string; url: string; snippet?: string }[];
 }
 
 export interface ChatHistoryItem {
@@ -111,7 +112,7 @@ export const chatService = {
 
     // When backend is ready:
     // return apiClient.get(`/api/chats/${chatId}/messages`);
-    
+
     // Mock response for testing
     return MOCK_MESSAGES_DB[chatId] || [];
   },
@@ -125,29 +126,33 @@ export const chatService = {
       id: Date.now().toString(),
       role: 'ai',
       content: MOCK_AI_RESPONSE,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      sources: [
+        { title: 'LinkedIn - React Developer Guide', url: 'https://linkedin.com/pulse/react-guide' },
+        { title: 'Wikipedia - Quantum Physics', url: 'https://en.wikipedia.org/wiki/Quantum' }
+      ]
     };
-    
+
     const resultingChatId = options?.chatId || `chat_${Date.now()}`;
 
     // --- MOCK LOGIC START ---
     if (!options?.chatId) {
-       MOCK_HISTORY.unshift({ id: resultingChatId, title: message.substring(0, 30) + '...', date: 'Just now' });
-       MOCK_MESSAGES_DB[resultingChatId] = [
-         { id: Date.now().toString(), role: 'user', content: message, timestamp: new Date().toISOString() },
-         responsePayload
-       ];
+      MOCK_HISTORY.unshift({ id: resultingChatId, title: message.substring(0, 30) + '...', date: 'Just now' });
+      MOCK_MESSAGES_DB[resultingChatId] = [
+        { id: Date.now().toString(), role: 'user', content: message, timestamp: new Date().toISOString() },
+        responsePayload
+      ];
     } else {
-       if (!MOCK_MESSAGES_DB[resultingChatId]) MOCK_MESSAGES_DB[resultingChatId] = [];
-       MOCK_MESSAGES_DB[resultingChatId].push({ id: Date.now().toString(), role: 'user', content: message, timestamp: new Date().toISOString() });
-       MOCK_MESSAGES_DB[resultingChatId].push(responsePayload);
+      if (!MOCK_MESSAGES_DB[resultingChatId]) MOCK_MESSAGES_DB[resultingChatId] = [];
+      MOCK_MESSAGES_DB[resultingChatId].push({ id: Date.now().toString(), role: 'user', content: message, timestamp: new Date().toISOString() });
+      MOCK_MESSAGES_DB[resultingChatId].push(responsePayload);
     }
     // --- MOCK LOGIC END ---
 
     // When backend is ready:
     // const result = await apiClient.post('/api/chats/message', { message, ...options });
     // return { message: result.message, chatId: result.chatId };
-    
+
     return { message: responsePayload, chatId: resultingChatId };
   },
 
@@ -157,7 +162,7 @@ export const chatService = {
   rateMessage: async (messageId: string, rating: 'up' | 'down'): Promise<void> => {
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 300));
-    
+
     // When backend is ready:
     // await apiClient.post(`/api/chats/message/${messageId}/rate`, { rating });
     console.log(`[Backend Ready] Message ${messageId} rated ${rating}`);
@@ -166,22 +171,25 @@ export const chatService = {
   /**
    * Asks the AI to try generating a message again, replacing the old one.
    */
-  regenerateMessage: async (messageId: string, type: 'standard' | 'improve', options?: SendMessageOptions): Promise<ChatMessage> => {
+  regenerateMessage: async (_messageId: string, type: 'standard' | 'improve', _options?: SendMessageOptions): Promise<ChatMessage> => {
     // Simulate long generation delay
     await new Promise(resolve => setTimeout(resolve, 1500));
-    
+
     const responsePayload: ChatMessage = {
       id: Date.now().toString(),
       role: 'ai',
-      content: type === 'improve' 
-        ? "Here is a much more detailed and comprehensive version of the previous response, drawing upon deeper insights and clearer examples...\n\n" + MOCK_AI_RESPONSE 
+      content: type === 'improve'
+        ? "Here is a much more detailed and comprehensive version of the previous response, drawing upon deeper insights and clearer examples...\n\n" + MOCK_AI_RESPONSE
         : "Let me try explaining that in a different way.\n\n" + MOCK_AI_RESPONSE,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      sources: [
+        { title: 'Improved AI Source', url: 'https://example.com/ai' }
+      ]
     };
 
     // When backend is ready:
     // return apiClient.post(`/api/chats/message/${messageId}/regenerate`, { type, ...options });
-    
+
     return responsePayload;
   }
 };

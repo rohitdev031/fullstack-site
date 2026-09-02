@@ -8,6 +8,7 @@ export function useCompare() {
   const [allAvailableModels, setAllAvailableModels] = useState<AIModel[]>([]);
   const [selectedModels, setSelectedModels] = useState<AIModel[]>([]);
   const [results, setResults] = useState<ComparisonResult[]>([]);
+  const [analysis, setAnalysis] = useState<any>(null); // Ideally we'd import CompareAnalysisData type, but 'any' is okay or we can import it
   
   useEffect(() => {
     const fetchModels = async () => {
@@ -20,8 +21,9 @@ export function useCompare() {
 
   const handleCompare = async () => {
     setIsComparing(true);
-    const mockResults = await compareService.comparePrompt(prompt, selectedModels.map(m => m.name));
-    setResults(mockResults);
+    const response = await compareService.comparePrompt(prompt, selectedModels.map(m => m.name));
+    setResults(response.results);
+    setAnalysis(response.analysis);
     setIsComparing(false);
   };
 
@@ -44,6 +46,7 @@ export function useCompare() {
     allAvailableModels,
     selectedModels,
     results,
+    analysis,
     handleCompare,
     removeModel,
     addModel
