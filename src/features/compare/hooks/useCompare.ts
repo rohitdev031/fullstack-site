@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { compareService } from '@/services/compareService';
-import type { AIModel, ComparisonResult } from '@/services/compareService';
+import type { AIModel, ComparisonResult, CompareAnalysisData } from '@/services/compareService';
 
 export function useCompare() {
   const [prompt, setPrompt] = useState('What are the most effective strategies for improving productivity while working from home?');
@@ -8,26 +8,29 @@ export function useCompare() {
   const [allAvailableModels, setAllAvailableModels] = useState<AIModel[]>([]);
   const [selectedModels, setSelectedModels] = useState<AIModel[]>([]);
   const [results, setResults] = useState<ComparisonResult[]>([]);
-  const [analysis, setAnalysis] = useState<any>(null); // Ideally we'd import CompareAnalysisData type, but 'any' is okay or we can import it
-  
+  const [analysis, setAnalysis] = useState<CompareAnalysisData | null>(null);
+
   const [error, setError] = useState<string | null>(null);
-  
+  const [modelFetchError, setModelFetchError] = useState<string | null>(null);
+
   useEffect(() => {
     const fetchModels = async () => {
       try {
+        setModelFetchError(null);
         const models = await compareService.getAvailableModels();
         setAllAvailableModels(models);
         setSelectedModels(models.slice(0, 3));
       } catch (err) {
         console.error("Failed to fetch available models", err);
+        setModelFetchError("Failed to load models. Please refresh the page.");
       }
     };
     fetchModels();
   }, []);
 
   const handleCompare = async () => {
-    if (!prompt.trim() || selectedModels.length === 0) return;
-    
+    if (isComparing || !prompt.trim() || selectedModels.length === 0) return;
+
     setIsComparing(true);
     setError(null);
     try {
@@ -58,10 +61,10 @@ export function useCompare() {
     setSelectedModels(prev => {
       const newModel = allAvailableModels.find(m => m.name === newModelName);
       if (!newModel) return prev;
-      
+
       const updated = [...prev];
       const existingIndex = updated.findIndex(m => m.name === newModelName);
-      
+
       if (existingIndex !== -1 && existingIndex !== index) {
         // If the model is already selected somewhere else, swap their positions
         updated[existingIndex] = prev[index];
@@ -83,6 +86,7 @@ export function useCompare() {
     results,
     analysis,
     error,
+    modelFetchError,
     handleCompare,
     removeModel,
     addModel,

@@ -12,8 +12,8 @@ import {
 type ChatComposerProps = {
   prompt: string;
   setPrompt: (p: string) => void;
-  attachedFile: string | null;
-  setAttachedFile: (f: string | null) => void;
+  attachedFile: File | null;
+  setAttachedFile: (f: File | null) => void;
   fileInputRef: React.Ref<HTMLInputElement>;
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   fileAccept: string;
@@ -69,7 +69,7 @@ export function ChatComposer({
               </div>
 
               <FileText className="w-6 h-6 text-primary mb-1" />
-              <span className="text-[10px] font-bold text-muted-foreground truncate w-full px-2 text-center uppercase tracking-wider">{attachedFile.split('.').pop() || 'FILE'}</span>
+              <span className="text-[10px] font-bold text-muted-foreground truncate w-full px-2 text-center uppercase tracking-wider">{attachedFile.name.split('.').pop() || 'FILE'}</span>
             </div>
           </div>
         )}

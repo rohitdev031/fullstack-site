@@ -3,7 +3,7 @@ import { useSearch } from '../hooks/useSearch';
 import { useState, useRef, useEffect } from 'react';
 
 export function SearchBar() {
-  const { query, setQuery, results, isSearching } = useSearch();
+  const { query, setQuery, results, isSearching, error } = useSearch();
   const [isFocused, setIsFocused] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -38,7 +38,11 @@ export function SearchBar() {
        {/* Dropdown Results */}
        {isFocused && (query.trim().length > 0) && (
          <div className="absolute top-full left-0 right-0 mt-2 bg-background border border-border/60 rounded-xl shadow-lg overflow-hidden flex flex-col max-h-[400px] overflow-y-auto animate-in fade-in slide-in-from-top-2">
-           {results.length === 0 && !isSearching ? (
+           {error ? (
+             <div className="p-6 text-center text-sm text-red-500/80">
+               Search failed, please try again.
+             </div>
+           ) : results.length === 0 && !isSearching ? (
              <div className="p-6 text-center text-sm text-muted-foreground">
                No results found for "<span className="font-medium text-foreground">{query}</span>"
              </div>

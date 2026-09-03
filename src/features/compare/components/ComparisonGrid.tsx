@@ -30,6 +30,18 @@ export function ComparisonGrid({ selectedModels, results }: ComparisonGridProps)
           </>
         );
 
+        const rawMockText = `Improving productivity while working from home requires a combination of environment design, routine management, and focus strategies.
+
+Key Strategies
+1. Create a dedicated workspace
+2. Establish a consistent routine
+3. Use time blocking techniques
+4. Minimize digital distractions
+5. Take regular breaks
+6. Set clear boundaries
+
+In summary, structure, discipline, and a distraction-free environment are key to maintaining high productivity at home.`;
+
         return (
           <ComparisonCard 
             key={model.name}
@@ -38,6 +50,7 @@ export function ComparisonGrid({ selectedModels, results }: ComparisonGridProps)
             match={i === 1 ? "Excellent match" : "Good match"}
             matchColor={i === 1 ? "text-emerald-700 bg-emerald-100 dark:bg-emerald-900/40 dark:text-emerald-300" : "text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 dark:text-emerald-400"}
             content={mockContent}
+            rawContent={result?.response || rawMockText}
             sources={result?.sources || []}
           />
         );

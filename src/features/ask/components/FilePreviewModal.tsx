@@ -2,7 +2,7 @@ import { FileText, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 type FilePreviewModalProps = {
-  attachedFile: string;
+  attachedFile: File;
   onClose: () => void;
 };
 
@@ -16,7 +16,7 @@ export function FilePreviewModal({ attachedFile, onClose }: FilePreviewModalProp
               <FileText className="w-5 h-5" />
             </div>
             <div className="flex flex-col">
-              <h3 className="font-bold text-[15px]">{attachedFile}</h3>
+              <h3 className="font-bold text-[15px]">{attachedFile.name}</h3>
               <span className="text-xs text-muted-foreground font-medium">Document Preview</span>
             </div>
           </div>
@@ -27,7 +27,7 @@ export function FilePreviewModal({ attachedFile, onClose }: FilePreviewModalProp
         <div className="flex-1 bg-muted/10 p-8 overflow-y-auto flex items-center justify-center">
           <div className="text-center flex flex-col items-center max-w-md mx-auto">
              <FileText className="w-20 h-20 text-muted-foreground/30 mb-6" />
-             <p className="text-muted-foreground font-medium mb-4 text-[15px]">Previewing the contents of <br/><span className="font-bold text-foreground text-lg">{attachedFile}</span></p>
+             <p className="text-muted-foreground font-medium mb-4 text-[15px]">Previewing the contents of <br/><span className="font-bold text-foreground text-lg">{attachedFile.name}</span></p>
              <p className="text-[13px] text-muted-foreground/70 leading-relaxed border-t border-border/50 pt-4 mt-2">
                This is a simulated preview window. In a real application, the actual file content (image, PDF viewer, or text data) would be rendered here securely.
              </p>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { NavLink, Link } from 'react-router-dom';
+import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { Plus, PanelLeftClose, PanelLeftOpen, MessageSquare } from 'lucide-react';
 import { mainNavLinks } from './NavigationLinks';
 import { Button } from '@/components/ui/button';
@@ -10,19 +10,23 @@ import { useAppContext } from '@/context/AppContext';
 
 export function Sidebar() {
   const { currentChatId, setCurrentChatId, history, setHistory } = useAppContext();
+  const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Only fetch initially if history is empty
     if (history.length === 0) {
       const fetchHistory = async () => {
         try {
+          setError(null);
           const data = await chatService.getChatHistory();
           setHistory(data);
         } catch (error) {
           console.error("Failed to fetch initial sidebar history:", error);
+          setError("Failed to load history.");
         }
       };
       fetchHistory();
@@ -31,6 +35,7 @@ export function Sidebar() {
 
   const handleToggleHistory = async () => {
     try {
+      setError(null);
       if (isHistoryExpanded) {
         setIsHistoryExpanded(false);
         // Optional: Refetch short history to collapse back
@@ -44,6 +49,7 @@ export function Sidebar() {
       }
     } catch (error) {
       console.error("Failed to toggle sidebar history:", error);
+      setError("Failed to load full history.");
     } finally {
       setIsLoadingHistory(false);
     }
@@ -59,7 +65,7 @@ export function Sidebar() {
 
   return (
     <aside className={`hidden md:flex flex-col ${isCollapsed ? 'w-20' : 'w-64'} transition-all duration-300 ease-in-out bg-sidebar text-sidebar-foreground border-r border-sidebar-border h-screen sticky top-0 z-50 overflow-hidden`}>
-      
+
       {/* Logo & Toggle */}
       <div className="p-4 flex flex-col gap-5 mb-2 border-b border-sidebar-border/30 pb-6">
         <div className={`flex items-center ${isCollapsed ? 'flex-col gap-6 pt-2' : 'justify-between px-1'}`}>
@@ -67,7 +73,7 @@ export function Sidebar() {
             <img src="/logo.jpg" alt="Aether" className="w-7 h-7 rounded-md object-cover shrink-0" />
             {!isCollapsed && <span className="whitespace-nowrap animate-in fade-in duration-300">Aether AI</span>}
           </div>
-          <button 
+          <button
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors shrink-0"
           >
@@ -90,10 +96,9 @@ export function Sidebar() {
             to={link.href}
             title={isCollapsed ? link.name : undefined}
             className={({ isActive }) =>
-              `flex items-center transition-all duration-200 ${isCollapsed ? 'justify-center mx-3 py-3 rounded-xl' : 'gap-3 pl-6 pr-4 py-3 border-l-4'} ${
-                isActive
-                  ? (isCollapsed ? 'bg-sidebar-accent text-white' : 'bg-sidebar-accent/50 text-white border-primary')
-                  : (isCollapsed ? 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-white' : 'border-transparent text-sidebar-foreground/80 hover:bg-sidebar-accent/40 hover:text-white')
+              `flex items-center transition-all duration-200 ${isCollapsed ? 'justify-center mx-3 py-3 rounded-xl' : 'gap-3 pl-6 pr-4 py-3 border-l-4'} ${isActive
+                ? (isCollapsed ? 'bg-sidebar-accent text-white' : 'bg-sidebar-accent/50 text-white border-primary')
+                : (isCollapsed ? 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-white' : 'border-transparent text-sidebar-foreground/80 hover:bg-sidebar-accent/40 hover:text-white')
               }`
             }
           >
@@ -107,32 +112,46 @@ export function Sidebar() {
           <div className="mt-4 pt-6 border-t border-sidebar-border/30 mb-2 animate-in fade-in duration-500 flex flex-col h-full">
             <h4 className="text-xs font-semibold text-sidebar-foreground/50 mb-3 px-7">History</h4>
             <div className="flex flex-col gap-5 overflow-y-auto scrollbar-hide px-2">
-              
-              {Object.entries(groupedHistory).map(([dateLabel, chats]) => (
-                <div key={dateLabel} className="flex flex-col gap-0.5">
-                  <span className="text-[11px] font-semibold text-sidebar-foreground/40 px-5 mb-1 tracking-wider uppercase">{dateLabel}</span>
-                  {chats.map((chat) => {
-                    const isActiveChat = chat.id === currentChatId;
-                    return (
-                      <div 
-                        key={chat.id} 
-                        onClick={() => setCurrentChatId(chat.id)}
-                        className={`text-sm py-2.5 mx-2 rounded-xl cursor-pointer flex items-center gap-3 overflow-hidden transition-colors ${isActiveChat ? 'bg-primary/20 text-white font-medium' : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/40 hover:text-white'} pl-3 pr-4`}
-                      >
-                        <MessageSquare className="w-4 h-4 shrink-0 opacity-70" />
-                        <span className="truncate">{chat.title}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
 
-              <div 
-                onClick={handleToggleHistory}
-                className={`text-xs text-sidebar-foreground/50 hover:text-white pl-5 py-2.5 mx-2 mt-1 rounded-xl hover:bg-sidebar-accent/30 cursor-pointer transition-colors font-medium flex items-center gap-2 ${isLoadingHistory ? 'opacity-50 pointer-events-none' : ''}`}
-              >
-                {isLoadingHistory ? 'Loading...' : isHistoryExpanded ? 'Show Less' : 'View All'}
-              </div>
+              {error ? (
+                <div className="text-center px-4 py-3 flex flex-col items-center gap-2">
+                  <span className="text-xs text-red-500/80">{error}</span>
+                  <Button variant="outline" size="sm" className="h-7 text-xs bg-sidebar-accent border-sidebar-border" onClick={() => setHistory([])}>
+                    Retry
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  {Object.entries(groupedHistory).map(([dateLabel, chats]) => (
+                    <div key={dateLabel} className="flex flex-col gap-0.5">
+                      <span className="text-[11px] font-semibold text-sidebar-foreground/40 px-5 mb-1 tracking-wider uppercase">{dateLabel}</span>
+                      {chats.map((chat) => {
+                        const isActiveChat = chat.id === currentChatId;
+                        return (
+                          <div
+                            key={chat.id}
+                            onClick={() => {
+                              setCurrentChatId(chat.id);
+                              navigate('/ask');
+                            }}
+                            className={`text-sm py-2.5 mx-2 rounded-xl cursor-pointer flex items-center gap-3 overflow-hidden transition-colors ${isActiveChat ? 'bg-primary/20 text-white font-medium' : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/40 hover:text-white'} pl-3 pr-4`}
+                          >
+                            <MessageSquare className="w-4 h-4 shrink-0 opacity-70" />
+                            <span className="truncate">{chat.title}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))}
+
+                  <div
+                    onClick={handleToggleHistory}
+                    className={`text-xs text-sidebar-foreground/50 hover:text-white pl-5 py-2.5 mx-2 mt-1 rounded-xl hover:bg-sidebar-accent/30 cursor-pointer transition-colors font-medium flex items-center gap-2 ${isLoadingHistory ? 'opacity-50 pointer-events-none' : ''}`}
+                  >
+                    {isLoadingHistory ? 'Loading...' : isHistoryExpanded ? 'Show Less' : 'View All'}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -140,7 +159,7 @@ export function Sidebar() {
 
       {/* Bottom Actions */}
       <div className={`p-4 flex flex-col gap-4 border-t border-sidebar-border/30 ${isCollapsed ? 'items-center' : ''}`}>
-        
+
         {/* User Profile & Settings */}
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-2 pt-2'}`}>
           <div className="flex items-center gap-3">

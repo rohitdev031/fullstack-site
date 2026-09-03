@@ -13,6 +13,7 @@ export function MobileNav() {
   const [isOpen, setIsOpen] = useState(false);
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { currentChatId, setCurrentChatId, history, setHistory } = useAppContext();
 
@@ -21,10 +22,12 @@ export function MobileNav() {
     if (history.length === 0) {
       const fetchHistory = async () => {
         try {
+          setError(null);
           const data = await chatService.getChatHistory();
           setHistory(data);
-        } catch (error) {
-          console.error("Failed to fetch initial mobile history:", error);
+        } catch (err) {
+          console.error("Failed to fetch initial mobile history:", err);
+          setError("Failed to load history.");
         }
       };
       fetchHistory();
@@ -56,8 +59,9 @@ export function MobileNav() {
         setHistory(fullData);
         setIsHistoryExpanded(true);
       }
-    } catch (error) {
-      console.error("Failed to toggle mobile history:", error);
+    } catch (err) {
+      console.error("Failed to toggle mobile history:", err);
+      setError("Failed to load full history.");
     } finally {
       setIsLoadingHistory(false);
     }
@@ -77,7 +81,9 @@ export function MobileNav() {
       {/* Left: Hamburger */}
       <div className="flex-1 flex justify-start">
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger render={<Button variant="ghost" size="icon" className="shrink-0 -ml-2" />}>
+          <SheetTrigger render={
+            <Button variant="ghost" size="icon" className="shrink-0 -ml-2" />
+          }>
             <Menu className="w-6 h-6 text-foreground" />
           </SheetTrigger>
           <SheetContent side="left" className="w-[85%] sm:w-[320px] flex flex-col p-0 bg-background border-r-border">
@@ -124,34 +130,45 @@ export function MobileNav() {
                   <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">History</h3>
                 </div>
                 <div className="flex flex-col gap-4 overflow-y-auto pb-4 px-1">
-                  {Object.entries(groupedHistory).map(([dateLabel, chats]) => (
-                    <div key={dateLabel} className="flex flex-col gap-0.5">
-                      <span className="text-[11px] font-semibold text-muted-foreground/70 px-2 mb-1 tracking-wider uppercase">{dateLabel}</span>
-                      {chats.map((chat) => {
-                        const isActiveChat = chat.id === currentChatId;
-                        return (
-                          <Button
-                            key={chat.id}
-                            variant="ghost"
-                            onClick={() => handleHistoryItemClick(chat.id)}
-                            className={`w-full justify-start h-auto py-2.5 px-3 font-normal text-sm group ${isActiveChat ? 'bg-primary/10 text-primary font-medium' : 'text-foreground/80 hover:text-foreground'}`}
-                          >
-                            <MessageSquare className={`w-4 h-4 mr-3 shrink-0 ${isActiveChat ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
-                            <div className="flex flex-col items-start truncate">
-                              <span className="truncate w-full text-left">{chat.title}</span>
-                            </div>
-                          </Button>
-                        );
-                      })}
+                  {error ? (
+                    <div className="text-center px-4 py-4 flex flex-col items-center gap-2">
+                      <span className="text-xs text-red-500/80">{error}</span>
+                      <Button variant="outline" size="sm" className="h-7 text-xs bg-sidebar-accent border-sidebar-border" onClick={() => setHistory([])}>
+                        Retry
+                      </Button>
                     </div>
-                  ))}
+                  ) : (
+                    <>
+                      {Object.entries(groupedHistory).map(([dateLabel, chats]) => (
+                        <div key={dateLabel} className="flex flex-col gap-0.5">
+                          <span className="text-[11px] font-semibold text-muted-foreground/70 px-2 mb-1 tracking-wider uppercase">{dateLabel}</span>
+                          {chats.map((chat) => {
+                            const isActiveChat = chat.id === currentChatId;
+                            return (
+                              <Button
+                                key={chat.id}
+                                variant="ghost"
+                                onClick={() => handleHistoryItemClick(chat.id)}
+                                className={`w-full justify-start h-auto py-2.5 px-3 font-normal text-sm group ${isActiveChat ? 'bg-primary/10 text-primary font-medium' : 'text-foreground/80 hover:text-foreground'}`}
+                              >
+                                <MessageSquare className={`w-4 h-4 mr-3 shrink-0 ${isActiveChat ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
+                                <div className="flex flex-col items-start truncate">
+                                  <span className="truncate w-full text-left">{chat.title}</span>
+                                </div>
+                              </Button>
+                            );
+                          })}
+                        </div>
+                      ))}
 
-                  <div
-                    onClick={handleToggleHistory}
-                    className={`text-xs text-muted-foreground hover:text-foreground px-4 py-2 mt-1 rounded-md hover:bg-muted/50 cursor-pointer transition-colors font-medium flex items-center gap-2 ${isLoadingHistory ? 'opacity-50 pointer-events-none' : ''}`}
-                  >
-                    {isLoadingHistory ? 'Loading...' : isHistoryExpanded ? 'Show Less' : 'View All'}
-                  </div>
+                      <div
+                        onClick={handleToggleHistory}
+                        className={`text-xs text-muted-foreground hover:text-foreground px-4 py-2 mt-1 rounded-md hover:bg-muted/50 cursor-pointer transition-colors font-medium flex items-center gap-2 ${isLoadingHistory ? 'opacity-50 pointer-events-none' : ''}`}
+                      >
+                        {isLoadingHistory ? 'Loading...' : isHistoryExpanded ? 'Show Less' : 'View All'}
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

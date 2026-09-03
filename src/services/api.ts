@@ -5,19 +5,45 @@
  * with actual fetch/axios requests.
  */
 
-// Simulated network delay
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+// Simulated network delay with abort support
+const delay = (ms: number, signal?: AbortSignal) => new Promise((resolve, reject) => {
+  if (signal?.aborted) {
+    return reject(new DOMException('Aborted', 'AbortError'));
+  }
+  
+  const timer = setTimeout(resolve, ms);
+  
+  if (signal) {
+    signal.addEventListener('abort', () => {
+      clearTimeout(timer);
+      reject(new DOMException('Aborted', 'AbortError'));
+    }, { once: true });
+  }
+});
+
+export interface ApiOptions {
+  signal?: AbortSignal;
+  failRate?: number; // 0.0 to 1.0
+}
+
+const simulateFailure = (failRate: number = 0) => {
+  if (Math.random() < failRate) {
+    throw new Error('Simulated network failure');
+  }
+};
 
 export const apiClient = {
-  get: async <T>(endpoint: string, mockData: T): Promise<T> => {
+  get: async <T>(endpoint: string, mockData: T, options?: ApiOptions): Promise<T> => {
     console.log(`[MOCK GET] ${endpoint}`);
-    await delay(500); // Simulate network latency
+    await delay(500, options?.signal); // Simulate network latency
+    simulateFailure(options?.failRate);
     return mockData;
   },
   
-  post: async <T>(endpoint: string, body: any, mockResponse: T): Promise<T> => {
+  post: async <T>(endpoint: string, body: any, mockResponse: T, options?: ApiOptions): Promise<T> => {
     console.log(`[MOCK POST] ${endpoint}`, body);
-    await delay(800); // Simulate network latency
+    await delay(800, options?.signal); // Simulate network latency
+    simulateFailure(options?.failRate);
     return mockResponse;
   }
 };

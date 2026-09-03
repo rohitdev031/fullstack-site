@@ -13,7 +13,7 @@ export function useAskChat() {
 
   const [prompt, setPrompt] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
-  const [attachedFile, setAttachedFile] = useState<string | null>(null);
+  const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [responseQuality, setResponseQuality] = useState<ResponseQuality>('Balanced');
   const [fileAccept, setFileAccept] = useState<string>('*/*');
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -21,17 +21,15 @@ export function useAskChat() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const prevChatIdRef = useRef(currentChatId);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const activeChatIdRef = useRef(currentChatId);
 
-  // Derived state: clear messages immediately during render if chat ID becomes null
-  // This satisfies React Compiler's rule against setting state in an effect
-  if
-    (currentChatId !== prevChatIdRef.current) {
-    prevChatIdRef.current = currentChatId;
+  useEffect(() => {
+    activeChatIdRef.current = currentChatId;
     if (currentChatId === null) {
       setMessages([]);
     }
-  }
+  }, [currentChatId]);
 
   // Fetch history when currentChatId changes
   useEffect(() => {
@@ -39,21 +37,31 @@ export function useAskChat() {
       return;
     }
 
+    let isActive = true;
+
     const loadOldChat = async () => {
       try {
         const oldMessages = await chatService.getChatMessages(currentChatId);
-        setMessages(oldMessages as Message[]);
+        if (isActive) {
+          setMessages(oldMessages as Message[]);
+        }
       } catch (error) {
         console.error("Failed to load chat history:", error);
-        setMessages([{
-          id: Date.now().toString(),
-          role: 'ai',
-          content: 'Failed to load chat history. Please try again or start a new chat.',
-        }]);
+        if (isActive) {
+          setMessages([{
+            id: Date.now().toString(),
+            role: 'ai',
+            content: 'Failed to load chat history. Please try again or start a new chat.',
+          }]);
+        }
       }
     };
 
     loadOldChat();
+
+    return () => {
+      isActive = false;
+    };
   }, [currentChatId]);
 
   // Auto-scroll to bottom when messages change
@@ -65,7 +73,7 @@ export function useAskChat() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setAttachedFile(e.target.files[0].name);
+      setAttachedFile(e.target.files[0]);
     }
   };
 
@@ -77,9 +85,14 @@ export function useAskChat() {
   };
 
   const handleSubmit = async (textToSubmit: string = prompt) => {
-    const fileName = attachedFile;
-    if (!textToSubmit.trim() && !fileName) return;
+    if (isGenerating) return;
 
+    const file = attachedFile;
+    const fileName = file ? file.name : null;
+
+    if (!textToSubmit.trim() && !file) return;
+
+    setIsGenerating(true);
     const userMsg: Message = {
       id: Date.now().toString(),
       role: 'user',
@@ -103,15 +116,28 @@ export function useAskChat() {
         currentModel,
         webSearchEnabled,
         responseQuality,
-        attachedFile: fileName,
+        attachedFile: file,
       });
 
       // If it was a new chat, the backend generated an ID. We update our global state.
-      if (currentChatId === null) {
+      if (currentChatId === null && activeChatIdRef.current === null) {
         setCurrentChatId(chatId);
         // Refresh global history so the sidebar updates instantly
-        const updatedHistory = await chatService.getChatHistory();
-        setHistory(updatedHistory);
+        try {
+          const updatedHistory = await chatService.getChatHistory();
+          setHistory(updatedHistory);
+        } catch (historyErr) {
+          console.error("Failed to update history after message:", historyErr);
+        }
+      } else if (currentChatId === null) {
+        // The user navigated away before the new chat was fully generated.
+        // We fetch the history so the new chat shows up in the sidebar, but we don't switch to it.
+        try {
+          const updatedHistory = await chatService.getChatHistory();
+          setHistory(updatedHistory);
+        } catch (historyErr) {
+          console.error("Failed to update history after message:", historyErr);
+        }
       }
 
       setMessages((prev) => prev.map(msg => {
@@ -131,10 +157,15 @@ export function useAskChat() {
         isLoading: false,
         content: 'Unable to get a response right now. Please try again.',
       } : msg));
+    } finally {
+      setIsGenerating(false);
     }
   };
 
   const handleRegenerate = async (messageId: string, type: 'standard' | 'improve') => {
+    if (isGenerating) return;
+    setIsGenerating(true);
+
     // Set message to loading state
     setMessages(prev => prev.map(msg =>
       msg.id === messageId ? { ...msg, isLoading: true, content: '' } : msg
@@ -153,6 +184,7 @@ export function useAskChat() {
           ...msg,
           isLoading: false,
           content: regeneratedMsg.content,
+          sources: regeneratedMsg.sources,
         } : msg
       ));
     } catch {
@@ -163,6 +195,8 @@ export function useAskChat() {
           content: 'Unable to regenerate right now. Please try again.',
         } : msg
       ));
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -194,6 +228,7 @@ export function useAskChat() {
     currentModel,
     setCurrentModel,
     webSearchEnabled,
-    setWebSearchEnabled
+    setWebSearchEnabled,
+    isGenerating,
   };
 }
