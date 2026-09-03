@@ -10,21 +10,36 @@ export function useCompare() {
   const [results, setResults] = useState<ComparisonResult[]>([]);
   const [analysis, setAnalysis] = useState<any>(null); // Ideally we'd import CompareAnalysisData type, but 'any' is okay or we can import it
   
+  const [error, setError] = useState<string | null>(null);
+  
   useEffect(() => {
     const fetchModels = async () => {
-      const models = await compareService.getAvailableModels();
-      setAllAvailableModels(models);
-      setSelectedModels(models.slice(0, 3));
+      try {
+        const models = await compareService.getAvailableModels();
+        setAllAvailableModels(models);
+        setSelectedModels(models.slice(0, 3));
+      } catch (err) {
+        console.error("Failed to fetch available models", err);
+      }
     };
     fetchModels();
   }, []);
 
   const handleCompare = async () => {
+    if (!prompt.trim() || selectedModels.length === 0) return;
+    
     setIsComparing(true);
-    const response = await compareService.comparePrompt(prompt, selectedModels.map(m => m.name));
-    setResults(response.results);
-    setAnalysis(response.analysis);
-    setIsComparing(false);
+    setError(null);
+    try {
+      const response = await compareService.comparePrompt(prompt, selectedModels.map(m => m.name));
+      setResults(response.results);
+      setAnalysis(response.analysis);
+    } catch (err) {
+      setError("An error occurred while comparing the models. Please try again.");
+      console.error(err);
+    } finally {
+      setIsComparing(false);
+    }
   };
 
   const removeModel = (modelName: string) => {
@@ -39,6 +54,26 @@ export function useCompare() {
     }
   };
 
+  const swapModel = (index: number, newModelName: string) => {
+    setSelectedModels(prev => {
+      const newModel = allAvailableModels.find(m => m.name === newModelName);
+      if (!newModel) return prev;
+      
+      const updated = [...prev];
+      const existingIndex = updated.findIndex(m => m.name === newModelName);
+      
+      if (existingIndex !== -1 && existingIndex !== index) {
+        // If the model is already selected somewhere else, swap their positions
+        updated[existingIndex] = prev[index];
+        updated[index] = newModel;
+      } else {
+        // Otherwise just replace the current slot
+        updated[index] = newModel;
+      }
+      return updated;
+    });
+  };
+
   return {
     prompt,
     setPrompt,
@@ -47,8 +82,10 @@ export function useCompare() {
     selectedModels,
     results,
     analysis,
+    error,
     handleCompare,
     removeModel,
-    addModel
+    addModel,
+    swapModel
   };
 }

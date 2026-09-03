@@ -20,8 +20,12 @@ export function MobileNav() {
     // Only fetch initially if history is empty
     if (history.length === 0) {
       const fetchHistory = async () => {
-        const data = await chatService.getChatHistory();
-        setHistory(data);
+        try {
+          const data = await chatService.getChatHistory();
+          setHistory(data);
+        } catch (error) {
+          console.error("Failed to fetch initial mobile history:", error);
+        }
       };
       fetchHistory();
     }
@@ -40,16 +44,21 @@ export function MobileNav() {
   };
 
   const handleToggleHistory = async () => {
-    if (isHistoryExpanded) {
-      setIsHistoryExpanded(false);
-      // Fetch short history to collapse back
-      const data = await chatService.getChatHistory();
-      setHistory(data);
-    } else {
-      setIsLoadingHistory(true);
-      const fullData = await chatService.getFullChatHistory();
-      setHistory(fullData);
-      setIsHistoryExpanded(true);
+    try {
+      if (isHistoryExpanded) {
+        setIsHistoryExpanded(false);
+        // Fetch short history to collapse back
+        const data = await chatService.getChatHistory();
+        setHistory(data);
+      } else {
+        setIsLoadingHistory(true);
+        const fullData = await chatService.getFullChatHistory();
+        setHistory(fullData);
+        setIsHistoryExpanded(true);
+      }
+    } catch (error) {
+      console.error("Failed to toggle mobile history:", error);
+    } finally {
       setIsLoadingHistory(false);
     }
   };
@@ -63,14 +72,12 @@ export function MobileNav() {
   }, {} as Record<string, ChatHistoryItem[]>);
 
   return (
-    <header className="md:hidden flex items-center justify-between px-4 border-b bg-background sticky top-0 z-50 h-14">
+    <header className="md:hidden flex items-center justify-between px-4  bg-background sticky top-0 z-50 h-14">
 
       {/* Left: Hamburger */}
       <div className="flex-1 flex justify-start">
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger
-            render={<Button variant="ghost" size="icon" className="shrink-0 -ml-2" />}
-          >
+          <SheetTrigger render={<Button variant="ghost" size="icon" className="shrink-0 -ml-2" />}>
             <Menu className="w-6 h-6 text-foreground" />
           </SheetTrigger>
           <SheetContent side="left" className="w-[85%] sm:w-[320px] flex flex-col p-0 bg-background border-r-border">

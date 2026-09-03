@@ -8,9 +8,11 @@ import { getIcon } from './iconMap';
 interface CompareControlsProps {
   prompt: string;
   setPrompt: (val: string) => void;
+  allAvailableModels: AIModel[];
   selectedModels: AIModel[];
   removeModel: (name: string) => void;
   addModel: () => void;
+  swapModel: (index: number, newModelName: string) => void;
   webSearchEnabled: boolean;
   setWebSearchEnabled: (val: boolean) => void;
   handleCompare: () => void;
@@ -19,13 +21,33 @@ interface CompareControlsProps {
 export function CompareControls({
   prompt,
   setPrompt,
+  allAvailableModels,
   selectedModels,
   removeModel,
   addModel,
+  swapModel,
   webSearchEnabled,
   setWebSearchEnabled,
   handleCompare
 }: CompareControlsProps) {
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Compare AI Models',
+          text: 'Check out this comparison of AI models!',
+          url: window.location.href,
+        });
+      } catch (err) {
+        console.log('Error sharing:', err);
+      }
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      alert('Link copied to clipboard!');
+    }
+  };
+
   return (
     <>
       {/* Desktop Header */}
@@ -89,13 +111,24 @@ export function CompareControls({
         <div className="flex items-center justify-between">
           <span className="text-sm font-bold">Select models</span>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full"><Share2 className="w-5 h-5" /></Button>
+            <Button onClick={handleShare} variant="ghost" size="icon" className="h-10 w-10 rounded-full"><Share2 className="w-5 h-5" /></Button>
           </div>
         </div>
         <div className="flex items-center gap-2 w-full">
-          {selectedModels.slice(0, 2).map((m) => (
-             <div key={m.name} className="flex-1 bg-background border border-border/50 rounded-xl px-3 py-3 text-sm flex justify-between items-center shadow-sm font-bold">
-               {m.name} <ChevronDown className="w-4 h-4 text-muted-foreground" />
+          {selectedModels.slice(0, 2).map((m, index) => (
+             <div key={index} className="relative flex-1 bg-background border border-border/50 rounded-xl shadow-sm overflow-hidden">
+               <select 
+                 value={m.name}
+                 onChange={(e) => swapModel(index, e.target.value)}
+                 className="w-full h-12 px-3 py-3 text-sm font-bold appearance-none bg-transparent outline-none focus:ring-0 z-10 relative cursor-pointer"
+               >
+                 {allAvailableModels.map(available => (
+                   <option key={available.name} value={available.name}>
+                     {available.name}
+                   </option>
+                 ))}
+               </select>
+               <ChevronDown className="w-4 h-4 text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none z-0" />
              </div>
           ))}
         </div>

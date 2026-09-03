@@ -39,7 +39,7 @@ export const compareService = {
   getAvailableModels: async (): Promise<AIModel[]> => {
     return apiClient.get('/api/compare/models', MOCK_MODELS);
   },
-
+  
   comparePrompt: async (prompt: string, models: string[]): Promise<CompareResponse> => {
     // Generate mock results for the selected models
     const results = models.map(model => ({
@@ -55,7 +55,7 @@ export const compareService = {
         { title: 'Remote Work Tips', url: 'https://example.com/remote' }
       ]
     }));
-
+    
     const analysis: CompareAnalysisData = {
       keyTakeaways: [
         "All models emphasize the importance of a dedicated workspace and consistent routine.",
@@ -74,7 +74,16 @@ export const compareService = {
         reason: "Provides the most comprehensive and actionable strategies with a strong focus on systems and sustainable habits."
       }
     };
-
+    
     return apiClient.post('/api/compare/run', { prompt, models }, { results, analysis });
+  },
+
+  rateComparison: async (modelName: string, rating: 'up' | 'down'): Promise<void> => {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    // When backend is ready:
+    // await apiClient.post(`/api/compare/rate`, { modelName, rating });
+    console.log(`[Backend Ready] Comparison from ${modelName} rated ${rating}`);
   }
 };

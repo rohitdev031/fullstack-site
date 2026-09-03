@@ -14,17 +14,17 @@ type AskControlsProps = {
   setResponseQuality: (quality: ResponseQuality) => void;
 };
 
-export function AskControls({
-  currentModel,
+export function AskControls({ 
+  currentModel, 
   setCurrentModel,
-  webSearchEnabled,
-  setWebSearchEnabled,
-  responseQuality,
-  setResponseQuality
+  webSearchEnabled, 
+  setWebSearchEnabled, 
+  responseQuality, 
+  setResponseQuality 
 }: AskControlsProps) {
   return (
     <div className="flex items-end gap-4 p-4 px-5 rounded-2xl bg-background border border-border/50 shadow-sm w-full shrink-0 mb-6">
-
+      
       {/* Select Model */}
       <div className="flex flex-col gap-2 w-56 shrink-0">
         <span className="text-[11px] font-bold text-muted-foreground pl-1">Select Model</span>
@@ -63,15 +63,15 @@ export function AskControls({
       <div className="flex flex-col gap-2 flex-1 max-w-80">
         <span className="text-[11px] font-bold text-muted-foreground pl-1">Response Quality</span>
         <div className="flex items-center border border-border/60 rounded-lg overflow-hidden bg-background p-1 h-11 w-full shadow-xs">
-          {RESPONSE_QUALITIES.map((q) => (
-            <button
-              key={q}
-              onClick={() => setResponseQuality(q)}
-              className={`flex-1 h-full text-[13px] font-medium rounded-md transition-all duration-200 ${responseQuality === q ? 'bg-indigo-50/80 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400' : 'text-muted-foreground hover:bg-muted/50'}`}
-            >
-              {q}
-            </button>
-          ))}
+           {RESPONSE_QUALITIES.map((q) => (
+             <button 
+               key={q}
+               onClick={() => setResponseQuality(q)}
+               className={`flex-1 h-full text-[13px] font-medium rounded-md transition-all duration-200 ${responseQuality === q ? 'bg-indigo-50/80 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400' : 'text-muted-foreground hover:bg-muted/50'}`}
+             >
+               {q}
+             </button>
+           ))}
         </div>
       </div>
 
@@ -81,7 +81,7 @@ export function AskControls({
           More Settings <Settings2 className="w-4 h-4" />
         </Button>
       </div>
-
+      
     </div>
   );
 }

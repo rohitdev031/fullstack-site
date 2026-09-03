@@ -2,7 +2,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, ChevronRight } from 'lucide-react';
-import type { AIModel, CompareAnalysisData } from '@/services/compareService';
+import type { CompareAnalysisData } from '@/services/compareService';
 
 interface AgreementRowProps {
   label: string;
@@ -28,7 +28,6 @@ function AgreementRow({ label, value, percent, color, width }: AgreementRowProps
 }
 
 interface CompareAnalysisProps {
-  selectedModels: AIModel[];
   analysis: CompareAnalysisData;
 }
 

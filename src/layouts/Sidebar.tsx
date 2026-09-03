@@ -18,24 +18,33 @@ export function Sidebar() {
     // Only fetch initially if history is empty
     if (history.length === 0) {
       const fetchHistory = async () => {
-        const data = await chatService.getChatHistory();
-        setHistory(data);
+        try {
+          const data = await chatService.getChatHistory();
+          setHistory(data);
+        } catch (error) {
+          console.error("Failed to fetch initial sidebar history:", error);
+        }
       };
       fetchHistory();
     }
   }, [history.length, setHistory]);
 
   const handleToggleHistory = async () => {
-    if (isHistoryExpanded) {
-      setIsHistoryExpanded(false);
-      // Optional: Refetch short history to collapse back
-      const data = await chatService.getChatHistory();
-      setHistory(data);
-    } else {
-      setIsLoadingHistory(true);
-      const fullData = await chatService.getFullChatHistory();
-      setHistory(fullData);
-      setIsHistoryExpanded(true);
+    try {
+      if (isHistoryExpanded) {
+        setIsHistoryExpanded(false);
+        // Optional: Refetch short history to collapse back
+        const data = await chatService.getChatHistory();
+        setHistory(data);
+      } else {
+        setIsLoadingHistory(true);
+        const fullData = await chatService.getFullChatHistory();
+        setHistory(fullData);
+        setIsHistoryExpanded(true);
+      }
+    } catch (error) {
+      console.error("Failed to toggle sidebar history:", error);
+    } finally {
       setIsLoadingHistory(false);
     }
   };

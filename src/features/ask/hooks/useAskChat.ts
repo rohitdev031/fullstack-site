@@ -21,24 +21,40 @@ export function useAskChat() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const prevChatIdRef = useRef(currentChatId);
+
+  // Derived state: clear messages immediately during render if chat ID becomes null
+  // This satisfies React Compiler's rule against setting state in an effect
+  if
+    (currentChatId !== prevChatIdRef.current) {
+    prevChatIdRef.current = currentChatId;
+    if (currentChatId === null) {
+      setMessages([]);
+    }
+  }
+
   // Fetch history when currentChatId changes
   useEffect(() => {
-    if (currentChatId === null) return;
+    if (currentChatId === null) {
+      return;
+    }
 
     const loadOldChat = async () => {
       try {
         const oldMessages = await chatService.getChatMessages(currentChatId);
-        // Cast the backend messages to our local Message type
         setMessages(oldMessages as Message[]);
       } catch (error) {
         console.error("Failed to load chat history:", error);
+        setMessages([{
+          id: Date.now().toString(),
+          role: 'ai',
+          content: 'Failed to load chat history. Please try again or start a new chat.',
+        }]);
       }
     };
 
     loadOldChat();
   }, [currentChatId]);
-
-  const visibleMessages = currentChatId === null ? [] : messages;
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -104,6 +120,7 @@ export function useAskChat() {
             ...msg,
             isLoading: false,
             content: message.content,
+            sources: message.sources,
           };
         }
         return msg;
@@ -159,7 +176,7 @@ export function useAskChat() {
   return {
     prompt,
     setPrompt,
-    messages: visibleMessages,
+    messages,
     attachedFile,
     setAttachedFile,
     responseQuality,
