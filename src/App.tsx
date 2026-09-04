@@ -3,6 +3,7 @@ import { MainLayout } from './layouts/MainLayout';
 import { HomePage } from './pages/HomePage';
 import { AskPage } from './pages/AskPage';
 import { ComparePage } from './pages/ComparePage';
+import { VerifyPage } from './pages/VerifyPage';
 
 
 function App() {
@@ -12,6 +13,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/ask" element={<AskPage />} />
         <Route path="/compare" element={<ComparePage />} />
+        <Route path="/verify" element={<VerifyPage />} />
         <Route path="*" element={<div className="p-12 text-center text-muted-foreground">Page not found</div>} />
       </Route>
     </Routes>
