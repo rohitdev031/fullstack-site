@@ -2,7 +2,10 @@ import { useState, useEffect } from 'react';
 import { compareService } from '@/services/compareService';
 import type { AIModel, ComparisonResult, CompareAnalysisData } from '@/services/compareService';
 
+import { useAppContext } from '@/context/useAppContext';
+
 export function useCompare() {
+  const { webSearchEnabled } = useAppContext();
   const [prompt, setPrompt] = useState('What are the most effective strategies for improving productivity while working from home?');
   const [isComparing, setIsComparing] = useState(false);
   const [allAvailableModels, setAllAvailableModels] = useState<AIModel[]>([]);
@@ -34,7 +37,7 @@ export function useCompare() {
     setIsComparing(true);
     setError(null);
     try {
-      const response = await compareService.comparePrompt(prompt, selectedModels.map(m => m.name));
+      const response = await compareService.comparePrompt(prompt, selectedModels.map(m => m.name), { webSearchEnabled });
       setResults(response.results);
       setAnalysis(response.analysis);
     } catch (err) {

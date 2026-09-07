@@ -1,4 +1,4 @@
-import { useAppContext } from '@/context/AppContext';
+import { useAppContext } from '@/context/useAppContext';
 import { useCompare } from './hooks/useCompare';
 import { CompareControls } from './components/CompareControls';
 import { ComparisonGrid } from './components/ComparisonGrid';
@@ -34,7 +34,7 @@ export function CompareView() {
         </div>
       ) : (
         <>
-          <CompareControls 
+          <CompareControls
             prompt={prompt}
             setPrompt={setPrompt}
             allAvailableModels={allAvailableModels}
@@ -56,20 +56,20 @@ export function CompareView() {
               <p className="text-muted-foreground text-[15px] max-w-md">{error}</p>
             </div>
           ) : isComparing ? (
-        <div className="flex flex-col items-center justify-center py-32 gap-4">
-           <div className="flex items-center gap-2.5 text-indigo-500">
-             <span className="w-3.5 h-3.5 rounded-full bg-indigo-500/80 animate-bounce"></span>
-             <span className="w-3.5 h-3.5 rounded-full bg-indigo-500/80 animate-bounce delay-75"></span>
-             <span className="w-3.5 h-3.5 rounded-full bg-indigo-500/80 animate-bounce delay-150"></span>
-           </div>
-           <p className="text-muted-foreground font-semibold">Generating comparisons from {selectedModels.length} models...</p>
-        </div>
-      ) : (
-        <>
-          <ComparisonGrid selectedModels={selectedModels} results={results} />
-          {analysis && <CompareAnalysis analysis={analysis} />}
-        </>
-      )}
+            <div className="flex flex-col items-center justify-center py-32 gap-4">
+              <div className="flex items-center gap-2.5 text-indigo-500">
+                <span className="w-3.5 h-3.5 rounded-full bg-indigo-500/80 animate-bounce"></span>
+                <span className="w-3.5 h-3.5 rounded-full bg-indigo-500/80 animate-bounce delay-75"></span>
+                <span className="w-3.5 h-3.5 rounded-full bg-indigo-500/80 animate-bounce delay-150"></span>
+              </div>
+              <p className="text-muted-foreground font-semibold">Generating comparisons from {selectedModels.length} models...</p>
+            </div>
+          ) : (
+            <>
+              <ComparisonGrid selectedModels={selectedModels} results={results} />
+              {analysis && <CompareAnalysis analysis={analysis} />}
+            </>
+          )}
         </>
       )}
     </div>

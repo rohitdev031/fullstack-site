@@ -127,10 +127,12 @@ export const chatService = {
       role: 'ai',
       content: MOCK_AI_RESPONSE,
       timestamp: new Date().toISOString(),
-      sources: [
-        { title: 'LinkedIn - React Developer Guide', url: 'https://linkedin.com/pulse/react-guide' },
-        { title: 'Wikipedia - Quantum Physics', url: 'https://en.wikipedia.org/wiki/Quantum' }
-      ]
+      ...(options?.webSearchEnabled && {
+        sources: [
+          { title: 'LinkedIn - React Developer Guide', url: 'https://linkedin.com/pulse/react-guide' },
+          { title: 'Wikipedia - Quantum Physics', url: 'https://en.wikipedia.org/wiki/Quantum' }
+        ]
+      })
     };
     
     const resultingChatId = options?.chatId || `chat_${Date.now()}`;
@@ -187,9 +189,11 @@ export const chatService = {
         ? "Here is a much more detailed and comprehensive version of the previous response, drawing upon deeper insights and clearer examples...\n\n" + MOCK_AI_RESPONSE 
         : "Let me try explaining that in a different way.\n\n" + MOCK_AI_RESPONSE,
       timestamp: new Date().toISOString(),
-      sources: [
-        { title: 'Improved AI Source', url: 'https://example.com/ai' }
-      ]
+      ...(options?.webSearchEnabled && {
+        sources: [
+          { title: 'Improved AI Source', url: 'https://example.com/ai' }
+        ]
+      })
     };
 
     // When backend is ready:

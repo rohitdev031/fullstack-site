@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Sparkles, Copy, RotateCcw, ThumbsUp, ThumbsDown, MoreHorizontal, Target, ChevronDown, ChevronUp, Check, Link } from 'lucide-react';
+import { Sparkles, Copy, RotateCcw, ThumbsUp, ThumbsDown, MoreHorizontal, Target, ChevronDown, ChevronUp, Check, Link, ShieldCheck } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { chatService } from '@/services/chatService';
 import { type Message } from '../types';
+import { useNavigate } from 'react-router-dom';
 
 type ChatMessageCardProps = {
   message: Message;
@@ -13,6 +14,7 @@ type ChatMessageCardProps = {
 };
 
 export function ChatMessageCard({ message, currentModel, onRegenerate }: ChatMessageCardProps) {
+  const navigate = useNavigate();
   const [isCopied, setIsCopied] = useState(false);
   const [rating, setRating] = useState<'up' | 'down' | null>(null);
   const [showSources, setShowSources] = useState(false);
@@ -82,6 +84,7 @@ export function ChatMessageCard({ message, currentModel, onRegenerate }: ChatMes
               </Button>
               <Button onClick={() => onRegenerate(message.id, 'standard')} variant="outline" size="sm" className="h-9 text-xs rounded-lg font-semibold border-border/60 shadow-xs"><RotateCcw className="w-3.5 h-3.5 mr-2" /> Regenerate</Button>
               <Button onClick={() => onRegenerate(message.id, 'improve')} variant="outline" size="sm" className="h-9 text-xs rounded-lg font-semibold border-border/60 shadow-xs"><Sparkles className="w-3.5 h-3.5 mr-2" /> Improve Answer</Button>
+              <Button onClick={() => navigate('/verify', { state: { answerToVerify: message.content } })} variant="outline" size="sm" className="h-9 text-xs rounded-lg font-semibold border-border/60 shadow-xs hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"><ShieldCheck className="w-3.5 h-3.5 mr-2" /> Verify</Button>
 
               <div className="ml-auto flex items-center gap-1.5">
                 <Button onClick={() => handleRate('up')} variant="ghost" size="icon" className={`h-9 w-9 rounded-lg transition-colors ${rating === 'up' ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}><ThumbsUp className="w-4 h-4" /></Button>

@@ -38,6 +38,12 @@ export interface VerificationData {
     webSearch: string;
     factCheckingLevel: string;
   };
+  sources?: {
+    title: string;
+    url: string;
+    domain: string;
+    icon: string;
+  }[];
 }
 
 const MOCK_VERIFICATION_DATA: VerificationData = {
@@ -82,7 +88,17 @@ const MOCK_VERIFICATION_DATA: VerificationData = {
 };
 
 export const verifyService = {
-  getVerificationResults: async (): Promise<VerificationData> => {
-    return apiClient.get('/api/verify/results', MOCK_VERIFICATION_DATA);
+  getVerificationResults: async (options?: { webSearchEnabled?: boolean }): Promise<VerificationData> => {
+    const responseData = { ...MOCK_VERIFICATION_DATA };
+    
+    if (options?.webSearchEnabled) {
+      responseData.sources = [
+        { title: 'The Eiffel Tower - Official Website', url: 'https://toureiffel.paris', domain: 'toureiffel.paris', icon: 'ShieldCheck' },
+        { title: 'Wikipedia - Eiffel Tower', url: 'https://en.wikipedia.org', domain: 'wikipedia.org', icon: 'W' },
+        { title: 'Paris History Archives', url: 'https://paris.fr', domain: 'paris.fr', icon: 'FileText' }
+      ];
+    }
+    
+    return apiClient.get('/api/verify/results', responseData);
   }
 };

@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { chatService } from '@/services/chatService';
 import type { ChatHistoryItem } from '@/services/chatService';
-import { useAppContext } from '@/context/AppContext';
+import { useAppContext } from '@/context/useAppContext';
 
 export function MobileNav() {
   const [isOpen, setIsOpen] = useState(false);

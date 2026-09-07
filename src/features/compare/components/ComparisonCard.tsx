@@ -32,7 +32,7 @@ export function ComparisonCard({ model, icon, match, matchColor, content, rawCon
     const prevRating = rating;
     const newRating = rating === type ? null : type;
     setRating(newRating);
-
+    
     if (newRating) {
       try {
         await compareService.rateComparison(model, newRating);
@@ -46,7 +46,7 @@ export function ComparisonCard({ model, icon, match, matchColor, content, rawCon
   return (
     <Card className="flex flex-col h-full shadow-sm border-border/50 rounded-2xl hover:shadow-md transition-all duration-300">
       <CardContent className="p-6 flex flex-col h-full">
-
+        
         {/* Card Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2.5">
@@ -83,26 +83,26 @@ export function ComparisonCard({ model, icon, match, matchColor, content, rawCon
               <ThumbsDown className="w-4 h-4" />
             </Button>
           </div>
-          <Button
+          <Button 
             onClick={() => setIsSourcesExpanded(!isSourcesExpanded)}
-            variant="outline"
-            size="sm"
+            variant="outline" 
+            size="sm" 
             className="h-9 text-xs px-3 font-semibold rounded-lg border-border/60 shadow-xs gap-1.5 hover:bg-muted/50"
           >
             Sources ({sources?.length || 0}) <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isSourcesExpanded ? 'rotate-180' : ''}`} />
           </Button>
         </div>
-
+        
         {/* Sources Section */}
         {isSourcesExpanded && sources && sources.length > 0 && (
           <div className="mt-4 pt-4 border-t border-border/50 animate-in fade-in slide-in-from-top-2">
             <h4 className="text-xs font-semibold text-foreground mb-3">Sources</h4>
             <div className="flex flex-col gap-2">
               {sources.map((source, idx) => (
-                <a
-                  key={idx}
-                  href={source.url}
-                  target="_blank"
+                <a 
+                  key={idx} 
+                  href={source.url} 
+                  target="_blank" 
                   rel="noopener noreferrer"
                   className="group flex flex-col gap-1 p-2 rounded-lg hover:bg-muted/50 transition-colors"
                 >

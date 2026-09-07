@@ -40,7 +40,7 @@ export const compareService = {
     return apiClient.get('/api/compare/models', MOCK_MODELS);
   },
   
-  comparePrompt: async (prompt: string, models: string[]): Promise<CompareResponse> => {
+  comparePrompt: async (prompt: string, models: string[], options?: { webSearchEnabled?: boolean }): Promise<CompareResponse> => {
     // Generate mock results for the selected models
     const results = models.map(model => ({
       modelName: model,
@@ -50,10 +50,12 @@ export const compareService = {
         { label: 'Cost', value: '$0.02 / 1K', color: 'text-amber-600 dark:text-amber-400' },
         { label: 'Reasoning', value: 'High', color: 'text-blue-600 dark:text-blue-400' }
       ],
-      sources: [
-        { title: 'Productivity Hacks', url: 'https://example.com/productivity' },
-        { title: 'Remote Work Tips', url: 'https://example.com/remote' }
-      ]
+      ...(options?.webSearchEnabled && {
+        sources: [
+          { title: 'Productivity Hacks', url: 'https://example.com/productivity' },
+          { title: 'Remote Work Tips', url: 'https://example.com/remote' }
+        ]
+      })
     }));
     
     const analysis: CompareAnalysisData = {

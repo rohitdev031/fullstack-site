@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { chatService } from '@/services/chatService';
 import type { ChatHistoryItem } from '@/services/chatService';
-import { useAppContext } from '@/context/AppContext';
+import { useAppContext } from '@/context/useAppContext';
 
 export function Sidebar() {
   const { currentChatId, setCurrentChatId, history, setHistory } = useAppContext();

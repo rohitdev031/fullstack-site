@@ -1,19 +1,7 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
+import { AppContext } from './contextValue';
 import { type ModelId } from '@/features/ask/types';
 import type { ChatHistoryItem } from '@/services/chatService';
-
-type AppContextType = {
-  currentChatId: string | null;
-  setCurrentChatId: (id: string | null) => void;
-  currentModel: ModelId;
-  setCurrentModel: (model: ModelId) => void;
-  webSearchEnabled: boolean;
-  setWebSearchEnabled: (enabled: boolean) => void;
-  history: ChatHistoryItem[];
-  setHistory: (history: ChatHistoryItem[]) => void;
-};
-
-const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
@@ -35,12 +23,4 @@ export function AppProvider({ children }: { children: ReactNode }) {
       {children}
     </AppContext.Provider>
   );
-}
-
-export function useAppContext() {
-  const context = useContext(AppContext);
-  if (context === undefined) {
-    throw new Error('useAppContext must be used within an AppProvider');
-  }
-  return context;
 }

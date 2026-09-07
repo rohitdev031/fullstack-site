@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useAppContext } from '@/context/AppContext';
+import { useAppContext } from '@/context/useAppContext';
 import { chatService } from '@/services/chatService';
 import { type Message, type ResponseQuality } from '../types';
 
@@ -27,7 +27,8 @@ export function useAskChat() {
   useEffect(() => {
     activeChatIdRef.current = currentChatId;
     if (currentChatId === null) {
-      setMessages([]);
+      const resetTimer = window.setTimeout(() => setMessages([]), 0);
+      return () => window.clearTimeout(resetTimer);
     }
   }, [currentChatId]);
 
