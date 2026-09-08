@@ -10,6 +10,8 @@ export function useSearch() {
   // Debounced search
   useEffect(() => {
     if (!query.trim()) {
+      setResults([]);
+      setIsSearching(false);
       return;
     }
     let isActive = true;
@@ -41,8 +43,8 @@ export function useSearch() {
   return {
     query,
     setQuery,
-    results: query.trim() ? results : [],
-    isSearching: query.trim() ? isSearching : false,
+    results,
+    isSearching,
     error
   };
 }

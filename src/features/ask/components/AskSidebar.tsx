@@ -11,19 +11,19 @@ type AskSidebarProps = {
   onToggleWebSearch: () => void;
 };
 
-export function AskSidebar({ 
-  currentModel, 
-  onAnalyzeDocument, 
-  onWriteContent, 
-  onCompareModels, 
-  onVerifyAnswer, 
-  onToggleWebSearch 
+export function AskSidebar({
+  currentModel,
+  onAnalyzeDocument,
+  onWriteContent,
+  onCompareModels,
+  onVerifyAnswer,
+  onToggleWebSearch
 }: AskSidebarProps) {
   const { tip, isVisible, dismissTip } = useTip();
   const modelName = AVAILABLE_MODELS.find(m => m.id === currentModel)?.name || currentModel;
 
   return (
-    <div className="hidden xl:flex flex-col w-[300px] gap-6 shrink-0 overflow-y-auto scrollbar-hide pb-10">
+    <div className="hidden xl:flex flex-col w-75 gap-6 shrink-0 overflow-y-auto scrollbar-hide pb-10">
 
       {/* Current Model */}
       <div className="bg-background border border-border/60 rounded-2xl p-5 shadow-sm">
@@ -47,23 +47,23 @@ export function AskSidebar({
         <h3 className="text-sm font-bold mb-4">Quick Tools</h3>
         <div className="flex flex-col gap-2.5">
           <div onClick={onAnalyzeDocument} className="flex items-center gap-3 p-3 rounded-xl border border-border/50 hover:border-border cursor-pointer transition-all hover:shadow-xs bg-background">
-            <div className="p-1.5 bg-green-100 dark:bg-green-900/30 text-green-600 rounded-lg shrink-0"><FileText className="w-4 h-4" /></div>
+            <div className={['p-1.5', 'bg-green-100', 'dark:bg-green-900/30', 'text-green-600', 'rounded-lg', 'shrink-0'].join(' ')}><FileText className="w-4 h-4" /></div>
             <span className="text-[13px] font-bold text-foreground">Analyze Document</span>
           </div>
           <div onClick={onWriteContent} className="flex items-center gap-3 p-3 rounded-xl border border-border/50 hover:border-border cursor-pointer transition-all hover:shadow-xs bg-background">
-            <div className="p-1.5 bg-purple-100 dark:bg-purple-900/30 text-purple-600 rounded-lg shrink-0"><PenTool className="w-4 h-4" /></div>
+            <div className={['p-1.5', 'bg-purple-100', 'dark:bg-purple-900/30', 'text-purple-600', 'rounded-lg', 'shrink-0'].join(' ')}><PenTool className="w-4 h-4" /></div>
             <span className="text-[13px] font-bold text-foreground">Write Content</span>
           </div>
           <div onClick={onCompareModels} className="flex items-center gap-3 p-3 rounded-xl border border-border/50 hover:border-border cursor-pointer transition-all hover:shadow-xs bg-background">
-            <div className="p-1.5 bg-orange-100 dark:bg-orange-900/30 text-orange-600 rounded-lg shrink-0"><ArrowLeftRight className="w-4 h-4" /></div>
+            <div className={['p-1.5', 'bg-orange-100', 'dark:bg-orange-900/30', 'text-orange-600', 'rounded-lg', 'shrink-0'].join(' ')}><ArrowLeftRight className="w-4 h-4" /></div>
             <span className="text-[13px] font-bold text-foreground">Compare Models</span>
           </div>
           <div onClick={onVerifyAnswer} className="flex items-center gap-3 p-3 rounded-xl border border-border/50 hover:border-border cursor-pointer transition-all hover:shadow-xs bg-background">
-            <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-lg shrink-0"><ShieldCheck className="w-4 h-4" /></div>
+            <div className={['p-1.5', 'bg-blue-100', 'dark:bg-blue-900/30', 'text-blue-600', 'rounded-lg', 'shrink-0'].join(' ')}><ShieldCheck className="w-4 h-4" /></div>
             <span className="text-[13px] font-bold text-foreground">Verify Answer</span>
           </div>
           <div onClick={onToggleWebSearch} className="flex items-center gap-3 p-3 rounded-xl border border-border/50 hover:border-border cursor-pointer transition-all hover:shadow-xs bg-background">
-            <div className="p-1.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 rounded-lg shrink-0"><Globe className="w-4 h-4" /></div>
+            <div className={['p-1.5', 'bg-indigo-100', 'dark:bg-indigo-900/30', 'text-indigo-600', 'rounded-lg', 'shrink-0'].join(' ')}><Globe className="w-4 h-4" /></div>
             <span className="text-[13px] font-bold text-foreground">Web Search</span>
           </div>
         </div>
@@ -78,8 +78,8 @@ export function AskSidebar({
           <p className="text-xs text-indigo-800/80 leading-relaxed font-medium">
             {tip.content}
           </p>
-          <button 
-            onClick={dismissTip} 
+          <button
+            onClick={dismissTip}
             className="absolute top-4 right-4 text-indigo-400 hover:text-indigo-600 transition-colors opacity-0 group-hover:opacity-100"
           >
             <X className="w-3.5 h-3.5" />

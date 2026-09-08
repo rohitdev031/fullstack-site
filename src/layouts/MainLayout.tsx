@@ -8,13 +8,13 @@ import { SearchBar } from '@/features/search/components/SearchBar';
 export function MainLayout() {
   return (
     <div className="flex min-h-screen bg-background text-foreground w-full relative overflow-hidden">
-      
+
       {/* Figma Signature Premium Glowing Radial Background */}
       <div className="absolute top-[-10%] right-[-5%] w-200 h-150 bg-purple-500/10 rounded-full blur-[120px] pointer-events-none -z-10 hidden md:block"></div>
-      
+
       {/* Desktop Sidebar (hidden on mobile) */}
       <Sidebar />
-      
+
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden bg-transparent">
         {/* Mobile Top Navigation (hidden on desktop) */}
@@ -24,7 +24,7 @@ export function MainLayout() {
         <header className="hidden md:flex h-16 items-center justify-between px-8 shrink-0 relative z-10">
           <SearchBar />
           <div className="flex items-center gap-4">
-             <Button className="bg-purple-100 hover:bg-purple-200 text-purple-700 h-9 px-4 rounded-full font-semibold shadow-none border-0 gap-1.5 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-900/50">
+             <Button className={['bg-purple-100 hover:bg-purple-200', 'text-purple-700', 'h-9 px-4 rounded-full font-semibold shadow-none border-0 gap-1.5', 'dark:bg-purple-900/30', 'dark:text-purple-300', 'dark:hover:bg-purple-900/50'].join(' ')}>
                <Sparkles className="w-3.5 h-3.5" /> Upgrade
              </Button>
              <Button variant="ghost" size="icon" className="rounded-full w-9 h-9 text-muted-foreground">
@@ -35,7 +35,7 @@ export function MainLayout() {
              </Button>
           </div>
         </header>
-        
+
         {/* Scrollable Page Content */}
         <main className="flex-1 overflow-y-auto w-full p-4 md:p-6 lg:p-8 pt-2 md:pt-4">
           <Outlet />

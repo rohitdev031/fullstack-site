@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { compareService } from '@/services/compareService';
 import type { AIModel, ComparisonResult, CompareAnalysisData } from '@/services/compareService';
 
-import { useAppContext } from '@/context/useAppContext';
+import { useAppContext } from '@/context/AppContext';
 
 export function useCompare() {
   const { webSearchEnabled } = useAppContext();

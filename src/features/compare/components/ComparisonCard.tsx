@@ -14,9 +14,10 @@ interface ComparisonCardProps {
   content: ReactNode;
   rawContent?: string;
   sources: { title: string; url: string; snippet?: string }[];
+  className?: string;
 }
 
-export function ComparisonCard({ model, icon, match, matchColor, content, rawContent, sources }: ComparisonCardProps) {
+export function ComparisonCard({ model, icon, match, matchColor, content, rawContent, sources, className }: ComparisonCardProps) {
   const [isCopied, setIsCopied] = useState(false);
   const [rating, setRating] = useState<'up' | 'down' | null>(null);
   const [isSourcesExpanded, setIsSourcesExpanded] = useState(false);
@@ -32,7 +33,7 @@ export function ComparisonCard({ model, icon, match, matchColor, content, rawCon
     const prevRating = rating;
     const newRating = rating === type ? null : type;
     setRating(newRating);
-    
+
     if (newRating) {
       try {
         await compareService.rateComparison(model, newRating);
@@ -44,9 +45,9 @@ export function ComparisonCard({ model, icon, match, matchColor, content, rawCon
   };
 
   return (
-    <Card className="flex flex-col h-full shadow-sm border-border/50 rounded-2xl hover:shadow-md transition-all duration-300">
+    <Card className={['flex flex-col h-full shadow-sm border-border/50 rounded-2xl hover:shadow-md transition-all duration-300', className].filter(Boolean).join(' ')}>
       <CardContent className="p-6 flex flex-col h-full">
-        
+
         {/* Card Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2.5">
@@ -73,7 +74,7 @@ export function ComparisonCard({ model, icon, match, matchColor, content, rawCon
         {/* Card Footer */}
         <div className="flex items-center justify-between pt-5 mt-6 border-t border-border/50">
           <div className="flex items-center gap-1">
-            <Button onClick={handleCopy} variant="ghost" size="icon" className={`h-9 w-9 rounded-lg transition-colors ${isCopied ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-500' : 'text-muted-foreground hover:bg-muted/50'}`}>
+            <Button onClick={handleCopy} variant="ghost" size="icon" className={`h-9 w-9 rounded-lg transition-colors ${isCopied ? ['bg-green-50', 'text-green-600', 'dark:bg-green-900/20', 'dark:text-green-500'].join(' ') : 'text-muted-foreground hover:bg-muted/50'}`}>
               {isCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
             </Button>
             <Button onClick={() => handleRate('up')} variant="ghost" size="icon" className={`h-9 w-9 rounded-lg transition-colors ${rating === 'up' ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:bg-muted/50'}`}>
@@ -83,26 +84,26 @@ export function ComparisonCard({ model, icon, match, matchColor, content, rawCon
               <ThumbsDown className="w-4 h-4" />
             </Button>
           </div>
-          <Button 
+          <Button
             onClick={() => setIsSourcesExpanded(!isSourcesExpanded)}
-            variant="outline" 
-            size="sm" 
+            variant="outline"
+            size="sm"
             className="h-9 text-xs px-3 font-semibold rounded-lg border-border/60 shadow-xs gap-1.5 hover:bg-muted/50"
           >
             Sources ({sources?.length || 0}) <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isSourcesExpanded ? 'rotate-180' : ''}`} />
           </Button>
         </div>
-        
+
         {/* Sources Section */}
         {isSourcesExpanded && sources && sources.length > 0 && (
           <div className="mt-4 pt-4 border-t border-border/50 animate-in fade-in slide-in-from-top-2">
             <h4 className="text-xs font-semibold text-foreground mb-3">Sources</h4>
             <div className="flex flex-col gap-2">
               {sources.map((source, idx) => (
-                <a 
-                  key={idx} 
-                  href={source.url} 
-                  target="_blank" 
+                <a
+                  key={idx}
+                  href={source.url}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="group flex flex-col gap-1 p-2 rounded-lg hover:bg-muted/50 transition-colors"
                 >

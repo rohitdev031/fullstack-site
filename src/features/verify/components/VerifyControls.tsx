@@ -1,7 +1,7 @@
 import { Sparkles } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useAppContext } from '@/context/useAppContext';
+import { useAppContext } from '@/context/AppContext';
 import { type ModelId, AVAILABLE_MODELS } from '@/features/ask/types';
 
 interface VerifyControlsProps {
@@ -11,6 +11,7 @@ interface VerifyControlsProps {
 
 export function VerifyControls({ webSearchEnabled, setWebSearchEnabled }: VerifyControlsProps) {
   const { currentModel, setCurrentModel } = useAppContext();
+
 
   return (
     <div className="hidden md:flex items-center gap-5 mt-2 shrink-0">

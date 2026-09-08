@@ -8,7 +8,7 @@ type FilePreviewModalProps = {
 
 export function FilePreviewModal({ attachedFile, onClose }: FilePreviewModalProps) {
   return (
-    <div className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-100 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-card w-full max-w-4xl h-[85vh] rounded-3xl shadow-2xl border border-border/50 flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between p-4 px-6 border-b bg-muted/20">
           <div className="flex items-center gap-4">

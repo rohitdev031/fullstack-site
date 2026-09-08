@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { chatService } from '@/services/chatService';
 import type { ChatHistoryItem } from '@/services/chatService';
-import { useAppContext } from '@/context/useAppContext';
+import { useAppContext } from '@/context/AppContext';
 
 export function Sidebar() {
   const { currentChatId, setCurrentChatId, history, setHistory } = useAppContext();
@@ -96,9 +96,10 @@ export function Sidebar() {
             to={link.href}
             title={isCollapsed ? link.name : undefined}
             className={({ isActive }) =>
-              `flex items-center transition-all duration-200 ${isCollapsed ? 'justify-center mx-3 py-3 rounded-xl' : 'gap-3 pl-6 pr-4 py-3 border-l-4'} ${isActive
-                ? (isCollapsed ? 'bg-sidebar-accent text-white' : 'bg-sidebar-accent/50 text-white border-primary')
-                : (isCollapsed ? 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-white' : 'border-transparent text-sidebar-foreground/80 hover:bg-sidebar-accent/40 hover:text-white')
+              `flex items-center transition-all duration-200 ${isCollapsed ? 'justify-center mx-3 py-3 rounded-xl' : 'gap-3 pl-6 pr-4 py-3 border-l-4'} ${
+                isActive
+                  ? (isCollapsed ? 'bg-sidebar-accent text-white' : 'bg-sidebar-accent/50 text-white border-primary')
+                  : (isCollapsed ? 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-white' : 'border-transparent text-sidebar-foreground/80 hover:bg-sidebar-accent/40 hover:text-white')
               }`
             }
           >

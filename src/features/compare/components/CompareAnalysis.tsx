@@ -17,7 +17,7 @@ function AgreementRow({ label, value, percent, color, width }: AgreementRowProps
     <div className="flex items-center justify-between gap-4">
       <span className="truncate w-40 text-foreground">{label}</span>
       <div className="flex items-center gap-3 w-40">
-        <span className={`w-14 text-xs font-bold ${value === 'High' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>{value}</span>
+        <span className={`w-14 text-xs font-bold ${value === 'High' ? ['text-emerald-600', 'dark:text-emerald-400'].join(' ') : ['text-amber-600', 'dark:text-amber-400'].join(' ')}`}>{value}</span>
         <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
           <div className={`h-full ${color} ${width}`} />
         </div>
@@ -34,7 +34,7 @@ interface CompareAnalysisProps {
 export function CompareAnalysis({ analysis }: CompareAnalysisProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-2 shrink-0">
-      
+
       {/* Key Takeaways */}
       <Card className="shadow-sm border-border/50 flex flex-col h-full rounded-2xl">
         <CardContent className="p-6 flex flex-col h-full">
@@ -59,13 +59,13 @@ export function CompareAnalysis({ analysis }: CompareAnalysisProps) {
           <h3 className="font-bold text-[15px] mb-6">Model Agreement</h3>
           <div className="space-y-5 text-[13px] font-bold flex-1">
              {analysis.agreements.map((agreement, i) => (
-               <AgreementRow 
-                 key={i} 
-                 label={agreement.label} 
-                 value={agreement.value} 
-                 percent={agreement.percent} 
-                 color={agreement.color} 
-                 width={agreement.width} 
+               <AgreementRow
+                 key={i}
+                 label={agreement.label}
+                 value={agreement.value}
+                 percent={agreement.percent}
+                 color={agreement.color}
+                 width={agreement.width}
                />
              ))}
           </div>

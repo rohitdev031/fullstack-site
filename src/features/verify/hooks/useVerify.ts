@@ -32,7 +32,7 @@ export function useVerify() {
     };
 
     fetchData();
-  }, [answerToVerify, webSearchEnabled]);
+  }, [webSearchEnabled]);
 
   return {
     webSearchEnabled,
