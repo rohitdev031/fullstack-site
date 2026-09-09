@@ -88,9 +88,31 @@ const MOCK_VERIFICATION_DATA: VerificationData = {
 };
 
 export const verifyService = {
+  /**
+   * =========================================================================
+   * 🛑 BACKEND INTEGRATION POINT: `getVerificationResults`
+   * =========================================================================
+   * 
+   * TO THE BACKEND TEAM:
+   * 1. Remove the `MOCK_VERIFICATION_DATA` and the mock `apiClient` call below.
+   * 2. Perform a real `fetch` or `axios` call to your backend verification endpoint.
+   * 3. Ensure your backend returns JSON matching the `VerificationData` interface defined at the top of this file.
+   * 
+   * Example Real Implementation:
+   * ```typescript
+   * const response = await fetch('/api/v1/verify', {
+   *   method: 'POST',
+   *   body: JSON.stringify({ webSearchEnabled: options?.webSearchEnabled })
+   * });
+   * return await response.json(); // Must match VerificationData interface
+   * ```
+   */
   getVerificationResults: async (options?: { webSearchEnabled?: boolean }): Promise<VerificationData> => {
+    // -----------------------------------------------------------------------
+    // TODO: [BACKEND] Replace this mock logic with the actual API call
+    // -----------------------------------------------------------------------
     const responseData = { ...MOCK_VERIFICATION_DATA };
-    
+
     if (options?.webSearchEnabled) {
       responseData.sources = [
         { title: 'The Eiffel Tower - Official Website', url: 'https://toureiffel.paris', domain: 'toureiffel.paris', icon: 'ShieldCheck' },
@@ -98,7 +120,8 @@ export const verifyService = {
         { title: 'Paris History Archives', url: 'https://paris.fr', domain: 'paris.fr', icon: 'FileText' }
       ];
     }
-    
+
+    // apiClient here acts as a mock delay wrapper.
     return apiClient.get('/api/verify/results', responseData);
   }
 };
