@@ -30,7 +30,7 @@ export function useVerify() {
         setIsLoading(false);
       }
     };
-
+    
     fetchData();
   }, [webSearchEnabled]);
 

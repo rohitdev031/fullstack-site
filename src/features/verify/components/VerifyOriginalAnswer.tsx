@@ -12,8 +12,8 @@ interface VerifyOriginalAnswerProps {
   onClaimSelect?: (index: number | null) => void;
 }
 
-export function VerifyOriginalAnswer({
-  originalAnswer,
+export function VerifyOriginalAnswer({ 
+  originalAnswer, 
   sources,
   claims = [],
   selectedClaimIndex = null,
@@ -27,21 +27,21 @@ export function VerifyOriginalAnswer({
     setLocalText(originalAnswer.text);
     setEditText(originalAnswer.text);
   }, [originalAnswer.text]);
-
+  
   // Helper to get color classes based on claim status
   const getHighlightColor = (status: string, isSelected: boolean) => {
     switch (status) {
       case 'Correct':
-        return isSelected
-          ? 'bg-emerald-200 dark:bg-emerald-900/60 border-b-2 border-emerald-500'
+        return isSelected 
+          ? 'bg-emerald-200 dark:bg-emerald-900/60 border-b-2 border-emerald-500' 
           : 'hover:bg-emerald-100 dark:hover:bg-emerald-900/40 border-b-2 border-emerald-400/50 cursor-pointer';
       case 'Incorrect':
-        return isSelected
-          ? 'bg-red-200 dark:bg-red-900/60 border-b-2 border-red-500'
+        return isSelected 
+          ? 'bg-red-200 dark:bg-red-900/60 border-b-2 border-red-500' 
           : 'hover:bg-red-100 dark:hover:bg-red-900/40 border-b-2 border-red-400/50 cursor-pointer';
       case 'Partially Correct':
-        return isSelected
-          ? 'bg-amber-200 dark:bg-amber-900/60 border-b-2 border-amber-500'
+        return isSelected 
+          ? 'bg-amber-200 dark:bg-amber-900/60 border-b-2 border-amber-500' 
           : 'hover:bg-amber-100 dark:hover:bg-amber-900/40 border-b-2 border-amber-400/50 cursor-pointer';
       default:
         return 'cursor-pointer hover:bg-muted';
@@ -52,7 +52,7 @@ export function VerifyOriginalAnswer({
   const renderHighlightedText = () => {
     const text = localText;
     if (!claims || claims.length === 0) return text;
-
+    
     const parts: React.ReactNode[] = [];
     let currentIndex = 0;
 
@@ -92,14 +92,14 @@ export function VerifyOriginalAnswer({
       if (match.start > currentIndex) {
         parts.push(<span key={`text-${currentIndex}`}>{text.substring(currentIndex, match.start)}</span>);
       }
-
+      
       // Add match span
       const claim = claims[match.claimIndex];
       const isSelected = selectedClaimIndex === match.claimIndex;
       const highlightClasses = getHighlightColor(claim.status, isSelected);
-
+      
       parts.push(
-        <span
+        <span 
           key={`match-${match.start}`}
           className={`transition-colors rounded-sm px-0.5 ${highlightClasses}`}
           onClick={() => onClaimSelect?.(isSelected ? null : match.claimIndex)}
@@ -108,7 +108,7 @@ export function VerifyOriginalAnswer({
           {text.substring(match.start, match.end)}
         </span>
       );
-
+      
       currentIndex = match.end;
     });
 
@@ -135,7 +135,7 @@ export function VerifyOriginalAnswer({
           </Button>
         </div>
       </div>
-
+      
       {isEditing && (
         <div className="fixed inset-0 z-100 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-card w-full max-w-4xl rounded-3xl shadow-2xl border border-border/50 flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
@@ -153,7 +153,7 @@ export function VerifyOriginalAnswer({
                 <X className="w-5 h-5" />
               </Button>
             </div>
-
+            
             <div className="p-6">
               <textarea
                 value={editText}
@@ -162,16 +162,16 @@ export function VerifyOriginalAnswer({
                 placeholder="Edit the answer text here..."
               />
             </div>
-
+            
             <div className="flex items-center justify-end gap-3 p-4 px-6 border-t bg-muted/10">
               <Button variant="outline" onClick={() => setIsEditing(false)} className="rounded-xl h-10 px-5 font-bold">
                 Cancel
               </Button>
-              <Button
+              <Button 
                 onClick={() => {
                   setLocalText(editText);
                   setIsEditing(false);
-                }}
+                }} 
                 className="rounded-xl h-10 px-5 font-bold gap-2"
               >
                 <Save className="w-4 h-4" /> Save Changes
@@ -180,7 +180,7 @@ export function VerifyOriginalAnswer({
           </div>
         </div>
       )}
-
+      
       <p className="text-[15px] leading-relaxed text-foreground/90 font-medium mb-8">
         {renderHighlightedText()}
       </p>
@@ -190,7 +190,7 @@ export function VerifyOriginalAnswer({
           <span className="text-[13px] font-bold text-foreground">Sources ({sources.length})</span>
           <div className="flex items-center gap-2">
             {sources.map((source, i) => (
-              <a
+              <a 
                 key={i}
                 href={source.url}
                 target="_blank"

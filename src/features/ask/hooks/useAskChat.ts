@@ -4,9 +4,9 @@ import { chatService } from '@/services/chatService';
 import { type Message, type ResponseQuality } from '../types';
 
 export function useAskChat() {
-  const {
-    currentChatId, setCurrentChatId,
-    currentModel, setCurrentModel,
+  const { 
+    currentChatId, setCurrentChatId, 
+    currentModel, setCurrentModel, 
     webSearchEnabled, setWebSearchEnabled,
     setHistory
   } = useAppContext();
@@ -86,10 +86,10 @@ export function useAskChat() {
 
   const handleSubmit = async (textToSubmit: string = prompt) => {
     if (isGenerating) return;
-
+    
     const file = attachedFile;
     const fileName = file ? file.name : null;
-
+    
     if (!textToSubmit.trim() && !file) return;
 
     setIsGenerating(true);
@@ -165,9 +165,9 @@ export function useAskChat() {
   const handleRegenerate = async (messageId: string, type: 'standard' | 'improve') => {
     if (isGenerating) return;
     setIsGenerating(true);
-
+    
     // Set message to loading state
-    setMessages(prev => prev.map(msg =>
+    setMessages(prev => prev.map(msg => 
       msg.id === messageId ? { ...msg, isLoading: true, content: '' } : msg
     ));
 
@@ -179,7 +179,7 @@ export function useAskChat() {
         responseQuality,
       });
 
-      setMessages(prev => prev.map(msg =>
+      setMessages(prev => prev.map(msg => 
         msg.id === messageId ? {
           ...msg,
           isLoading: false,
@@ -188,7 +188,7 @@ export function useAskChat() {
         } : msg
       ));
     } catch {
-      setMessages(prev => prev.map(msg =>
+      setMessages(prev => prev.map(msg => 
         msg.id === messageId ? {
           ...msg,
           isLoading: false,

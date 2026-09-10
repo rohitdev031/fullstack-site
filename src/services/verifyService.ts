@@ -112,7 +112,7 @@ export const verifyService = {
     // TODO: [BACKEND] Replace this mock logic with the actual API call
     // -----------------------------------------------------------------------
     const responseData = { ...MOCK_VERIFICATION_DATA };
-
+    
     if (options?.webSearchEnabled) {
       responseData.sources = [
         { title: 'The Eiffel Tower - Official Website', url: 'https://toureiffel.paris', domain: 'toureiffel.paris', icon: 'ShieldCheck' },
@@ -120,7 +120,7 @@ export const verifyService = {
         { title: 'Paris History Archives', url: 'https://paris.fr', domain: 'paris.fr', icon: 'FileText' }
       ];
     }
-
+    
     // apiClient here acts as a mock delay wrapper.
     return apiClient.get('/api/verify/results', responseData);
   }

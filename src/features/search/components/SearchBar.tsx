@@ -21,9 +21,9 @@ export function SearchBar() {
   return (
     <div ref={containerRef} className="relative w-full max-w-xl z-50">
        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-       <input
-         type="text"
-         placeholder="Search conversations..."
+       <input 
+         type="text" 
+         placeholder="Search conversations..." 
          value={query}
          onChange={(e) => setQuery(e.target.value)}
          onFocus={() => setIsFocused(true)}

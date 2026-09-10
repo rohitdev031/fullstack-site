@@ -34,7 +34,7 @@ interface CompareAnalysisProps {
 export function CompareAnalysis({ analysis }: CompareAnalysisProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-2 shrink-0">
-
+      
       {/* Key Takeaways */}
       <Card className="shadow-sm border-border/50 flex flex-col h-full rounded-2xl">
         <CardContent className="p-6 flex flex-col h-full">
@@ -59,13 +59,13 @@ export function CompareAnalysis({ analysis }: CompareAnalysisProps) {
           <h3 className="font-bold text-[15px] mb-6">Model Agreement</h3>
           <div className="space-y-5 text-[13px] font-bold flex-1">
              {analysis.agreements.map((agreement, i) => (
-               <AgreementRow
-                 key={i}
-                 label={agreement.label}
-                 value={agreement.value}
-                 percent={agreement.percent}
-                 color={agreement.color}
-                 width={agreement.width}
+               <AgreementRow 
+                 key={i} 
+                 label={agreement.label} 
+                 value={agreement.value} 
+                 percent={agreement.percent} 
+                 color={agreement.color} 
+                 width={agreement.width} 
                />
              ))}
           </div>

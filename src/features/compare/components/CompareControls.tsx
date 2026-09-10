@@ -58,11 +58,11 @@ export function CompareControls({
 
       {/* Unified Top Controls Box */}
       <div className="hidden md:flex bg-background border border-border/50 rounded-2xl p-6 shadow-sm w-full shrink-0">
-
+        
         {/* Left Side: Your Question */}
         <div className="flex flex-col w-[40%] pr-8 border-r border-border/50">
           <h3 className="text-sm font-bold text-foreground mb-4">Your Question</h3>
-          <Textarea
+          <Textarea 
              value={prompt}
              onChange={(e) => setPrompt(e.target.value)}
              className="min-h-25 border-0 p-0 shadow-none focus-visible:ring-0 resize-none text-[15px] leading-relaxed bg-transparent text-foreground/90 font-medium"
@@ -73,7 +73,7 @@ export function CompareControls({
         {/* Right Side: Select Models & Actions */}
         <div className="flex flex-col flex-1 pl-8">
           <h3 className="text-sm font-bold text-foreground mb-4">Select Models <span className="text-muted-foreground font-medium">({selectedModels.length}/4)</span></h3>
-
+          
           {/* Model Pills */}
           <div className="flex flex-wrap items-center gap-3">
              {selectedModels.map((model) => (
@@ -81,7 +81,7 @@ export function CompareControls({
                  <div className={['w-5.5 h-5.5 rounded-full', 'bg-white', 'dark:bg-indigo-950', 'flex items-center justify-center shadow-[0_1px_2px_rgba(0,0,0,0.05)]'].join(' ')}>
                    {getIcon(model.iconName)}
                  </div>
-                 {model.name}
+                 {model.name} 
                  <button onClick={() => removeModel(model.name)} className="text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-200 ml-0.5 rounded-full transition-colors focus:outline-none">
                     <X className="w-3.5 h-3.5" />
                  </button>
@@ -105,7 +105,7 @@ export function CompareControls({
           </div>
         </div>
       </div>
-
+      
       {/* Mobile Top Controls (Simplified) */}
       <div className="md:hidden flex flex-col gap-4 mb-2 shrink-0">
         <div className="flex items-center justify-between">
@@ -117,7 +117,7 @@ export function CompareControls({
         <div className="flex items-center gap-2 w-full">
           {selectedModels.slice(0, 2).map((m, index) => (
              <div key={index} className="relative flex-1 bg-background border border-border/50 rounded-xl shadow-sm overflow-hidden">
-               <select
+               <select 
                  value={m.name}
                  onChange={(e) => swapModel(index, e.target.value)}
                  className="w-full h-12 px-3 py-3 text-sm font-bold appearance-none bg-transparent outline-none focus:ring-0 z-10 relative cursor-pointer"
