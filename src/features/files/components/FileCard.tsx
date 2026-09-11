@@ -134,7 +134,7 @@ export function FileCard({ file, onDelete, onToggleStar }: FileCardProps) {
               <span className="font-medium">{file.isStarred ? 'Remove Star' : 'Add Star'}</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-3 cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10 py-2.5" onClick={(e: React.MouseEvent) => { e.preventDefault(); handleDelete(); }}>
+            <DropdownMenuItem variant="destructive" className="gap-3 cursor-pointer py-2.5" onClick={(e: React.MouseEvent) => { e.preventDefault(); handleDelete(); }}>
               <Trash className="w-4 h-4" />
               <span className="font-medium">Delete</span>
             </DropdownMenuItem>

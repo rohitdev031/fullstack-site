@@ -10,7 +10,7 @@ interface FilesUploadZoneProps {
 export function FilesUploadZone({ uploadingCount, onUploadClick }: FilesUploadZoneProps) {
   return (
     <Card 
-      className="border-dashed border-2 border-border/60 bg-muted/10 hover:bg-muted/30 transition-colors shadow-none cursor-pointer group rounded-2xl overflow-hidden relative"
+      className="shrink-0 border-dashed border-2 border-border/60 bg-muted/10 hover:bg-muted/30 transition-colors shadow-none cursor-pointer group rounded-2xl overflow-hidden relative"
       onClick={onUploadClick}
     >
       <CardContent className="p-8 md:p-12 flex flex-col items-center justify-center text-center">

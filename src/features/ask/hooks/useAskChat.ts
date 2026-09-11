@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import { chatService } from '@/services/chatService';
 import { type Message, type ResponseQuality } from '../types';
+import type { AetherFile } from '@/services/fileService';
 
 export function useAskChat() {
   const { 
@@ -13,7 +14,7 @@ export function useAskChat() {
 
   const [prompt, setPrompt] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
-  const [attachedFile, setAttachedFile] = useState<File | null>(null);
+  const [attachedFile, setAttachedFile] = useState<File | AetherFile | null>(null);
   const [responseQuality, setResponseQuality] = useState<ResponseQuality>('Balanced');
   const [fileAccept, setFileAccept] = useState<string>('*/*');
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);

@@ -1,4 +1,5 @@
-import { X, FileText, Plus, Paperclip, ChevronDown, Send } from 'lucide-react';
+import { useState } from 'react';
+import { X, FileText, Plus, Paperclip, ChevronDown, Send, HardDrive } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -7,13 +8,16 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import { FileSelectorModal } from './FileSelectorModal';
+import type { AetherFile } from '@/services/fileService';
 
 type ChatComposerProps = {
   prompt: string;
   setPrompt: (p: string) => void;
-  attachedFile: File | null;
-  setAttachedFile: (f: File | null) => void;
+  attachedFile: File | AetherFile | null;
+  setAttachedFile: (f: File | AetherFile | null) => void;
   fileInputRef: React.Ref<HTMLInputElement>;
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   fileAccept: string;
@@ -42,6 +46,12 @@ export function ChatComposer({
   webSearchEnabled,
   setWebSearchEnabled
 }: ChatComposerProps) {
+  const [isFileSelectorOpen, setIsFileSelectorOpen] = useState(false);
+
+  const getFileName = (f: File | AetherFile) => {
+    return 'id' in f ? f.name : f.name;
+  };
+
   return (
     <div className="absolute -bottom-4 -left-4 -right-4 md:bottom-0 md:left-0 md:right-0 pt-10 pb-0 md:pb-4 bg-linear-to-t from-background via-background via-70% to-transparent z-40 md:pr-2">
       <div className="relative shadow-sm rounded-none md:rounded-2xl bg-background border-t border-b-0 border-l-0 border-r-0 md:border md:border-border/60 transition-all focus-within:ring-0 md:focus-within:ring-4 focus-within:ring-primary/10 shrink-0 flex flex-col">
@@ -69,7 +79,9 @@ export function ChatComposer({
               </div>
 
               <FileText className="w-6 h-6 text-primary mb-1" />
-              <span className="text-[10px] font-bold text-muted-foreground truncate w-full px-2 text-center uppercase tracking-wider">{attachedFile.name.split('.').pop() || 'FILE'}</span>
+              <span className="text-[10px] font-bold text-muted-foreground truncate w-full px-2 text-center uppercase tracking-wider">
+                {getFileName(attachedFile).split('.').pop() || 'FILE'}
+              </span>
             </div>
           </div>
         )}
@@ -90,7 +102,12 @@ export function ChatComposer({
             <DropdownMenuContent side="top" align="start" className="w-56 mb-2 rounded-xl p-1 shadow-md border-border/60">
               <DropdownMenuItem className="gap-3 p-3 rounded-lg cursor-pointer font-medium" onClick={() => triggerFileInput('*/*')}>
                 <Paperclip className="w-4 h-4 text-muted-foreground" />
-                <span>Upload file</span>
+                <span>Upload from device</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="gap-3 p-3 rounded-lg cursor-pointer font-medium" onClick={() => setIsFileSelectorOpen(true)}>
+                <HardDrive className="w-4 h-4 text-muted-foreground" />
+                <span>Choose from My Files</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -113,6 +130,12 @@ export function ChatComposer({
           </Button>
         </div>
       </div>
+
+      <FileSelectorModal 
+        isOpen={isFileSelectorOpen}
+        onClose={() => setIsFileSelectorOpen(false)}
+        onSelect={(file) => setAttachedFile(file)}
+      />
     </div>
   );
 }

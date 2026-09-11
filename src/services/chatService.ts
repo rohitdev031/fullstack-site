@@ -1,4 +1,5 @@
 import { apiClient } from './api';
+import type { AetherFile } from './fileService';
 
 export interface ChatMessage {
   id: string;
@@ -73,7 +74,7 @@ export interface SendMessageOptions {
   currentModel?: string;
   webSearchEnabled?: boolean;
   responseQuality?: string;
-  attachedFile?: File | null;
+  attachedFile?: File | AetherFile | null;
 }
 
 export const chatService = {
@@ -139,7 +140,11 @@ export const chatService = {
 
     // --- MOCK LOGIC START ---
     if (options?.attachedFile) {
-      console.log(`[Mock Backend] Received file upload: ${options.attachedFile.name} (${options.attachedFile.size} bytes)`);
+      if ('id' in options.attachedFile) {
+        console.log(`[Mock Backend] Reusing existing file: ${options.attachedFile.name} (ID: ${options.attachedFile.id})`);
+      } else {
+        console.log(`[Mock Backend] Received new file upload: ${options.attachedFile.name} (${options.attachedFile.size} bytes)`);
+      }
     }
 
     if (!options?.chatId) {

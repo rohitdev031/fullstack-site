@@ -12,6 +12,8 @@ export function FilesView() {
     isLoading,
     searchQuery,
     setSearchQuery,
+    fileTypeFilter,
+    setFileTypeFilter,
     currentFilter,
     setCurrentFilter,
     uploadFile,
@@ -42,7 +44,7 @@ export function FilesView() {
       <div className="flex-1 flex flex-col gap-6 min-w-0">
         
         {/* Mobile Header */}
-        <div className="md:hidden flex items-center justify-between mb-2">
+        <div className="shrink-0 md:hidden flex items-center justify-between mb-2">
           <h1 className="text-2xl font-bold">Files</h1>
           <Button variant="ghost" size="icon" className="rounded-full">
             <Search className="w-5 h-5" />
@@ -57,6 +59,8 @@ export function FilesView() {
         <FilesToolbar 
           searchQuery={searchQuery} 
           onSearchChange={setSearchQuery} 
+          fileTypeFilter={fileTypeFilter}
+          onFileTypeChange={setFileTypeFilter}
         />
 
         <FilesList 

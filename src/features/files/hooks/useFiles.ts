@@ -9,6 +9,7 @@ export function useFiles(initialFilter: FileFilter = 'all') {
   
   const [searchQuery, setSearchQuery] = useState('');
   const [currentFilter, setCurrentFilter] = useState<FileFilter>(initialFilter);
+  const [fileTypeFilter, setFileTypeFilter] = useState<string>('all');
   
   // Ref to track the current active fetch request and prevent race conditions
   const activeFetchRef = useRef<symbol | null>(null);
@@ -54,8 +55,22 @@ export function useFiles(initialFilter: FileFilter = 'all') {
 
   // Derived state for UI
   const displayedFiles = files.filter(f => {
-    if (!searchQuery) return true;
-    return f.name.toLowerCase().includes(searchQuery.toLowerCase());
+    // Search query filter
+    if (searchQuery && !f.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+      return false;
+    }
+    
+    // File type filter
+    if (fileTypeFilter !== 'all') {
+      const mime = f.mimeType.toLowerCase();
+      if (fileTypeFilter === 'pdf' && !mime.includes('pdf')) return false;
+      if (fileTypeFilter === 'image' && !mime.startsWith('image/')) return false;
+      if (fileTypeFilter === 'document' && !mime.includes('word') && !mime.includes('document')) return false;
+      if (fileTypeFilter === 'spreadsheet' && !mime.includes('excel') && !mime.includes('spreadsheet')) return false;
+      if (fileTypeFilter === 'archive' && !mime.includes('zip') && !mime.includes('archive')) return false;
+    }
+
+    return true;
   });
 
   const uploadFile = (browserFile: File) => {
@@ -145,6 +160,8 @@ export function useFiles(initialFilter: FileFilter = 'all') {
     error,
     searchQuery,
     setSearchQuery,
+    fileTypeFilter,
+    setFileTypeFilter,
     currentFilter,
     setCurrentFilter,
     uploadFile,
