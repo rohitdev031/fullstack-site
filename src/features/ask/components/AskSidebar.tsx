@@ -1,5 +1,5 @@
 import { Sparkles, FileText, PenTool, ArrowLeftRight, ShieldCheck, Globe, X } from 'lucide-react';
-import { AVAILABLE_MODELS, type ModelId } from '../types';
+import { AVAILABLE_MODELS, type ModelId } from '@/services/ai/modelRegistry';
 import { useTip } from '../hooks/useTip';
 
 type AskSidebarProps = {
@@ -90,3 +90,4 @@ export function AskSidebar({
     </div>
   );
 }
+

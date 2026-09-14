@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { AetherFile } from '@/services/fileService';
+import type { AetherFile } from '@/services/files/fileService';
 
 interface FileCardProps {
   file: AetherFile;
@@ -26,11 +26,12 @@ function formatBytes(bytes: number, decimals = 2) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
-function getFileIcon(mimeType: string) {
-  if (mimeType.startsWith('image/')) return { Icon: ImageIcon, color: 'text-purple-500' };
-  if (mimeType.includes('zip') || mimeType.includes('archive')) return { Icon: FileArchive, color: 'text-yellow-500' };
-  if (mimeType.includes('word') || mimeType.includes('document')) return { Icon: FileText, color: 'text-blue-500' };
-  if (mimeType.includes('spreadsheet') || mimeType.includes('excel')) return { Icon: FileText, color: 'text-green-500' };
+function getFileIcon(mimeType?: string) {
+  const safeMime = mimeType || '';
+  if (safeMime.startsWith('image/')) return { Icon: ImageIcon, color: 'text-purple-500' };
+  if (safeMime.includes('zip') || safeMime.includes('archive')) return { Icon: FileArchive, color: 'text-yellow-500' };
+  if (safeMime.includes('word') || safeMime.includes('document')) return { Icon: FileText, color: 'text-blue-500' };
+  if (safeMime.includes('spreadsheet') || safeMime.includes('excel')) return { Icon: FileText, color: 'text-green-500' };
   return { Icon: FileText, color: 'text-red-500' };
 }
 
@@ -69,8 +70,8 @@ export function FileCard({ file, onDelete, onToggleStar }: FileCardProps) {
         </div>
       )}
       
-      <CardContent className="p-4 flex items-center justify-between">
-        <div className="flex items-center gap-4 min-w-0">
+      <CardContent className="p-4 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4 min-w-0 flex-1">
           <div className={`p-3 rounded-xl bg-muted group-hover:bg-background transition-colors shrink-0 relative`}>
             <Icon className={`w-5 h-5 ${color} ${file.status === 'uploading' ? 'opacity-50' : ''}`} />
             {file.status === 'uploading' && (
@@ -87,10 +88,10 @@ export function FileCard({ file, onDelete, onToggleStar }: FileCardProps) {
               {file.isStarred && <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500 shrink-0" />}
             </div>
             
-            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground mt-1 truncate">
-              <span>{formatBytes(file.sizeBytes)}</span>
+            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground mt-1 min-w-0">
+              <span className="shrink-0">{formatBytes(file.sizeBytes)}</span>
               <span className="w-1 h-1 rounded-full bg-muted-foreground/40 shrink-0"></span>
-              <span className="truncate">{file.mimeType.split('/').pop()?.toUpperCase() || 'FILE'}</span>
+              <span className="truncate min-w-0">{(file.mimeType || '').split('/').pop()?.toUpperCase() || 'FILE'}</span>
               
               {file.status === 'ready' && (
                 <>
@@ -144,3 +145,4 @@ export function FileCard({ file, onDelete, onToggleStar }: FileCardProps) {
     </Card>
   );
 }
+

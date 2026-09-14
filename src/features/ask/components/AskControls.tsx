@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-import { type ResponseQuality, RESPONSE_QUALITIES, type ModelId, AVAILABLE_MODELS } from '../types';
+import { type ResponseQuality, RESPONSE_QUALITIES } from '../types';
+import { type ModelId, AVAILABLE_MODELS } from '@/services/ai/modelRegistry';
 
 type AskControlsProps = {
   currentModel: ModelId;
@@ -23,7 +24,7 @@ export function AskControls({
   setResponseQuality 
 }: AskControlsProps) {
   return (
-    <div className="flex items-end gap-4 p-4 px-5 rounded-2xl bg-background border border-border/50 shadow-sm w-full shrink-0 mb-6">
+    <div className="flex items-end gap-4 p-3 md:p-4 px-4 md:px-5 rounded-2xl bg-background border border-border/50 shadow-sm w-full shrink-0 mb-4 md:mb-6 overflow-x-auto scrollbar-hide">
       
       {/* Select Model */}
       <div className="flex flex-col gap-2 w-56 shrink-0">
@@ -60,7 +61,7 @@ export function AskControls({
       <div className="w-px h-8 bg-border/60 mx-1 self-end mb-1.5" />
 
       {/* Response Quality */}
-      <div className="flex flex-col gap-2 flex-1 max-w-80">
+      <div className="flex flex-col gap-2 flex-1 min-w-[240px] max-w-80 shrink-0">
         <span className="text-[11px] font-bold text-muted-foreground pl-1">Response Quality</span>
         <div className="flex items-center border border-border/60 rounded-lg overflow-hidden bg-background p-1 h-11 w-full shadow-xs">
            {RESPONSE_QUALITIES.map((q) => (
@@ -85,3 +86,4 @@ export function AskControls({
     </div>
   );
 }
+

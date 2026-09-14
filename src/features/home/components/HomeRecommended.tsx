@@ -1,14 +1,29 @@
 import { Sparkles, Globe, LayoutGrid, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useAppContext } from '@/context/AppContext';
 
 export function HomeRecommended() {
+  const navigate = useNavigate();
+  const { setCurrentModel, setWebSearchEnabled } = useAppContext();
+
+  const handleStartSetup = () => {
+    setCurrentModel('gemini-1.5-pro');
+    setWebSearchEnabled(true);
+    navigate('/ask');
+  };
+
+  const handleWhyThis = () => {
+    alert("This recommendation is based on our deterministic configuration for the most capable model setup available in your current plan.");
+  };
+
   return (
     <div className="mt-0">
       <div className="flex items-center gap-2 mb-3">
         <h2 className="text-[0.95rem] md:text-lg font-bold text-foreground">Recommended for you</h2>
-        <Button variant="link" className="text-xs md:text-sm font-semibold text-blue-600 px-2 h-auto hover:no-underline">Why this?</Button>
+        <Button variant="link" onClick={handleWhyThis} className="text-xs md:text-sm font-semibold text-blue-600 px-2 h-auto hover:no-underline">Why this?</Button>
       </div>
       
       <div className="bg-primary/5 rounded-[20px] md:rounded-[24px] p-5 md:p-8 flex flex-col lg:flex-row gap-6 md:gap-8 items-center border border-primary/20">
@@ -24,7 +39,7 @@ export function HomeRecommended() {
            <p className="text-muted-foreground font-medium text-[0.85rem] md:text-[0.95rem] max-w-md leading-snug">
              Use Gemini Pro with web search for the latest information and deeper insights.
            </p>
-           <Button className="mt-1 md:mt-2 bg-[#5b52f6] hover:bg-[#4b42d6] text-white w-full sm:w-auto h-9 md:h-11 px-5 md:px-6 rounded-xl text-[0.85rem] md:text-base font-semibold shadow-md gap-2">
+           <Button onClick={handleStartSetup} className="mt-1 md:mt-2 bg-[#5b52f6] hover:bg-[#4b42d6] text-white w-full sm:w-auto h-9 md:h-11 px-5 md:px-6 rounded-xl text-[0.85rem] md:text-base font-semibold shadow-md gap-2">
              Start with this setup <ChevronRight className="w-3.5 h-3.5 md:w-4 md:h-4" />
            </Button>
         </div>

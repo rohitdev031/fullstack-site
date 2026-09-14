@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { tipService, type Tip } from '@/services/tipService';
+import { tipService, type Tip } from '@/services/tips/tipService';
 
 export function useTip() {
   const [tip, setTip] = useState<Tip | null>(null);
@@ -49,3 +49,4 @@ export function useTip() {
     dismissTip
   };
 }
+

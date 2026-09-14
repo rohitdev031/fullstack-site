@@ -1,7 +1,7 @@
 import { Search, FileText, Image as ImageIcon, FileArchive, Loader2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useFiles } from '@/features/files/hooks/useFiles';
-import type { AetherFile } from '@/services/fileService';
+import type { AetherFile } from '@/services/files/fileService';
 
 interface FileSelectorModalProps {
   isOpen: boolean;
@@ -103,3 +103,4 @@ export function FileSelectorModal({ isOpen, onClose, onSelect }: FileSelectorMod
     </div>
   );
 }
+

@@ -1,9 +1,9 @@
 import { ShieldCheck, CheckCircle2, AlertTriangle, XCircle, Search, FileText, Upload, ArrowRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import type { VerificationData } from '@/services/verifyService';
+import type { VerificationData } from '@/services/ai/types';
 import { useAppContext } from '@/context/AppContext';
-import { AVAILABLE_MODELS } from '@/features/ask/types';
+import { AVAILABLE_MODELS } from '@/services/ai/modelRegistry';
 
 interface VerifySidebarProps {
   metrics: VerificationData['metrics'];
@@ -183,3 +183,5 @@ ${recommendations.map(r => `- ${r}`).join('\n')}`;
     </div>
   );
 }
+
+

@@ -1,5 +1,3 @@
-import { Search } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useFiles } from './hooks/useFiles';
 import { FilesSidebar } from './components/FilesSidebar';
 import { FilesUploadZone } from './components/FilesUploadZone';
@@ -37,7 +35,7 @@ export function FilesView() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-6 pb-20 md:pb-10 h-full">
+    <div className="max-w-7xl w-full mx-auto flex flex-col md:flex-row gap-6 pb-20 md:pb-10 h-full min-w-0">
       <FilesSidebar currentFilter={currentFilter} onFilterChange={setCurrentFilter} />
 
       {/* Main Content */}
@@ -46,9 +44,6 @@ export function FilesView() {
         {/* Mobile Header */}
         <div className="shrink-0 md:hidden flex items-center justify-between mb-2">
           <h1 className="text-2xl font-bold">Files</h1>
-          <Button variant="ghost" size="icon" className="rounded-full">
-            <Search className="w-5 h-5" />
-          </Button>
         </div>
 
         <FilesUploadZone 

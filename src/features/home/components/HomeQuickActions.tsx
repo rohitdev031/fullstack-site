@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Search, FileText, PenTool, Globe, LayoutGrid, CheckCircle, Box } from 'lucide-react';
-import type { DashboardData } from '@/services/homeService';
+import type { DashboardData } from '../homeConfig';
 
 interface HomeQuickActionsProps {
   actions: DashboardData['quickActions'];
@@ -36,3 +36,4 @@ export function HomeQuickActions({ actions }: HomeQuickActionsProps) {
     </div>
   );
 }
+

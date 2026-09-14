@@ -6,7 +6,7 @@ import { VerifyResultsTable } from './components/VerifyResultsTable';
 import { VerifySidebar } from './components/VerifySidebar';
 import { AlertCircle } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
-import { AVAILABLE_MODELS } from '@/features/ask/types';
+import { AVAILABLE_MODELS } from '@/services/ai/modelRegistry';
 
 export function VerifyView() {
   const { currentModel } = useAppContext();
@@ -91,3 +91,4 @@ export function VerifyView() {
     </div>
   );
 }
+

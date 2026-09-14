@@ -2,7 +2,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, ChevronRight } from 'lucide-react';
-import type { CompareAnalysisData } from '@/services/compareService';
+import type { CompareAnalysisData } from '@/services/ai/types';
 
 interface AgreementRowProps {
   label: string;
@@ -99,3 +99,4 @@ export function CompareAnalysis({ analysis }: CompareAnalysisProps) {
     </div>
   );
 }
+

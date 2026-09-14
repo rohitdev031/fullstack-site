@@ -3,7 +3,7 @@ import { Sparkles, Copy, RotateCcw, ThumbsUp, ThumbsDown, MoreHorizontal, Target
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { chatService } from '@/services/chatService';
+import { chatService } from '@/services/chat/chatService';
 import { type Message } from '../types';
 import { useNavigate } from 'react-router-dom';
 
@@ -137,3 +137,4 @@ export function ChatMessageCard({ message, currentModel, onRegenerate }: ChatMes
     </Card>
   );
 }
+

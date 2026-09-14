@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Sparkles, Edit3, FileText, ShieldCheck, X, Save } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import type { VerificationData } from '@/services/verifyService';
+import type { VerificationData } from '@/services/ai/types';
 
 interface VerifyOriginalAnswerProps {
   originalAnswer: VerificationData['originalAnswer'];
@@ -201,8 +201,8 @@ export function VerifyOriginalAnswer({
                 {source.icon === 'ShieldCheck' && <ShieldCheck className={['w-4 h-4', 'text-blue-600', 'dark:text-blue-400'].join(' ')} />}
                 {source.icon === 'FileText' && <FileText className="w-3.5 h-3.5 text-muted-foreground" />}
                 {source.icon === 'W' && <span className="text-[11px] font-bold">W</span>}
-                {!['ShieldCheck', 'FileText', 'W'].includes(source.icon) && (
-                  <span className="text-[11px] font-bold text-muted-foreground">{source.domain.substring(0, 2).toUpperCase()}</span>
+                {!['ShieldCheck', 'FileText', 'W'].includes(source.icon || '') && (
+                  <span className="text-[11px] font-bold text-muted-foreground">{(source.domain || 'W').substring(0, 2).toUpperCase()}</span>
                 )}
               </a>
             ))}
@@ -212,3 +212,4 @@ export function VerifyOriginalAnswer({
     </div>
   );
 }
+

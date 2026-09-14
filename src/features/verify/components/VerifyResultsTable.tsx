@@ -1,6 +1,6 @@
 import { Sparkles, CheckCircle2, AlertTriangle, XCircle, ChevronDown, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import type { VerificationData } from '@/services/verifyService';
+import type { VerificationData } from '@/services/ai/types';
 
 interface VerifyResultsTableProps {
   metrics: VerificationData['metrics'];
@@ -98,3 +98,4 @@ export function VerifyResultsTable({
     </div>
   );
 }
+

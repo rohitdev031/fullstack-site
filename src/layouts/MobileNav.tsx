@@ -5,8 +5,8 @@ import { mainNavLinks } from './NavigationLinks';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { chatService } from '@/services/chatService';
-import type { ChatHistoryItem } from '@/services/chatService';
+import { chatService } from '@/services/chat/chatService';
+import type { ChatHistoryItem } from '@/services/chat/chatService';
 import { useAppContext } from '@/context/AppContext';
 
 export function MobileNav() {
@@ -205,3 +205,4 @@ export function MobileNav() {
     </header>
   );
 }
+

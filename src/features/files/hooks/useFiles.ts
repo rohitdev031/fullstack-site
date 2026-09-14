@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { fileService } from '@/services/fileService';
-import type { AetherFile, FileFilter } from '@/services/fileService';
+import { fileService } from '@/services/files/fileService';
+import type { AetherFile, FileFilter } from '@/services/files/fileService';
 
 export function useFiles(initialFilter: FileFilter = 'all') {
   const [files, setFiles] = useState<AetherFile[]>([]);
@@ -62,7 +62,7 @@ export function useFiles(initialFilter: FileFilter = 'all') {
     
     // File type filter
     if (fileTypeFilter !== 'all') {
-      const mime = f.mimeType.toLowerCase();
+      const mime = (f.mimeType || '').toLowerCase();
       if (fileTypeFilter === 'pdf' && !mime.includes('pdf')) return false;
       if (fileTypeFilter === 'image' && !mime.startsWith('image/')) return false;
       if (fileTypeFilter === 'document' && !mime.includes('word') && !mime.includes('document')) return false;
@@ -139,17 +139,23 @@ export function useFiles(initialFilter: FileFilter = 'all') {
   };
 
   const toggleStar = async (fileId: string) => {
-    // Optimistic toggle
-    setFiles(prev => prev.map(f => f.id === fileId ? { ...f, isStarred: !f.isStarred } : f));
+    let newStarredStatus: boolean | undefined;
+
+    // Optimistic toggle using the latest state to determine intent
+    setFiles(prev => {
+      const file = prev.find(f => f.id === fileId);
+      if (!file) return prev;
+      newStarredStatus = !file.isStarred;
+      return prev.map(f => f.id === fileId ? { ...f, isStarred: newStarredStatus! } : f);
+    });
+    
+    if (newStarredStatus === undefined) return;
     
     try {
-      const currentFile = files.find(f => f.id === fileId);
-      if (currentFile) {
-        await fileService.toggleStar(fileId, !currentFile.isStarred);
-      }
+      await fileService.toggleStar(fileId, newStarredStatus);
     } catch {
       // Revert on failure
-      setFiles(prev => prev.map(f => f.id === fileId ? { ...f, isStarred: !f.isStarred } : f));
+      setFiles(prev => prev.map(f => f.id === fileId ? { ...f, isStarred: !newStarredStatus! } : f));
       throw new Error('Failed to star file');
     }
   };
@@ -169,3 +175,4 @@ export function useFiles(initialFilter: FileFilter = 'all') {
     toggleStar
   };
 }
+

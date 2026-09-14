@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, type ReactNode } from 'react';
-import { type ModelId } from '@/features/ask/types';
-import type { ChatHistoryItem } from '@/services/chatService';
+import type { ModelId } from '@/services/ai/modelRegistry';
+import type { ChatHistoryItem } from '@/services/chat/chatService';
 
 type AppContextType = {
   currentChatId: string | null;
@@ -45,3 +45,5 @@ export function useAppContext() {
   }
   return context;
 }
+
+

@@ -37,10 +37,10 @@ export function AskView() {
   } = useAskChat();
 
   return (
-    <div className="max-w-[1600px] w-full mx-auto flex flex-col xl:flex-row gap-8 pb-10 h-[calc(100vh-6rem)]">
+    <div className="max-w-[1600px] w-full mx-auto flex-1 flex flex-col xl:flex-row gap-8 pb-4 md:pb-10 h-full min-h-0">
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col h-full relative pr-2">
+      <div className="flex-1 flex flex-col h-full min-h-0 relative pr-2">
 
         {/* Desktop Header */}
         <div className="hidden md:block shrink-0 mb-4">

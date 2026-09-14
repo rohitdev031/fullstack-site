@@ -2,7 +2,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Sparkles, X, Plus, ChevronDown, Share2 } from 'lucide-react';
-import type { AIModel } from '@/services/compareService';
+import type { ModelDefinition as AIModel } from '@/services/ai/modelRegistry';
 import { getIcon } from './iconMap';
 
 interface CompareControlsProps {
@@ -139,3 +139,4 @@ export function CompareControls({
     </>
   );
 }
+

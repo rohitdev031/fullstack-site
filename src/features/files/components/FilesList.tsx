@@ -1,6 +1,6 @@
 import { FileText, Loader2, SearchX } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import type { AetherFile } from '@/services/fileService';
+import type { AetherFile } from '@/services/files/fileService';
 import { FileCard } from './FileCard';
 
 interface FilesListProps {
@@ -57,3 +57,4 @@ export function FilesList({ files, searchQuery, isLoading, onDelete, onToggleSta
     </div>
   );
 }
+

@@ -1,12 +1,12 @@
 import { Routes, Route } from 'react-router-dom';
-import { MainLayout } from './layouts/MainLayout';
-import { HomePage } from './pages/HomePage';
-import { AskPage } from './pages/AskPage';
-import { ComparePage } from './pages/ComparePage';
-import { VerifyPage } from './pages/VerifyPage';
-import { FilesPage } from './pages/FilesPage';
+import { MainLayout } from '@/layouts/MainLayout';
+import { HomePage } from '@/pages/HomePage';
+import { AskPage } from '@/pages/AskPage';
+import { ComparePage } from '@/pages/ComparePage';
+import { VerifyPage } from '@/pages/VerifyPage';
+import { FilesPage } from '@/pages/FilesPage';
 
-function App() {
+export function AppRouter() {
   return (
     <Routes>
       <Route element={<MainLayout />}>
@@ -20,5 +20,3 @@ function App() {
     </Routes>
   );
 }
-
-export default App;

@@ -2,7 +2,7 @@ import { Sparkles } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAppContext } from '@/context/AppContext';
-import { type ModelId, AVAILABLE_MODELS } from '@/features/ask/types';
+import { AVAILABLE_MODELS, type ModelId } from '@/services/ai/modelRegistry';
 
 interface VerifyControlsProps {
   webSearchEnabled: boolean;
@@ -44,3 +44,4 @@ export function VerifyControls({ webSearchEnabled, setWebSearchEnabled }: Verify
     </div>
   );
 }
+

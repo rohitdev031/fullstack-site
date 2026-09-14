@@ -1,5 +1,5 @@
 import { Search, Filter, Check } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,6 +7,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
   DropdownMenuLabel,
+  DropdownMenuGroup,
 } from '@/components/ui/dropdown-menu';
 
 interface FilesToolbarProps {
@@ -40,31 +41,31 @@ export function FilesToolbar({ searchQuery, onSearchChange, fileTypeFilter, onFi
       </div>
       
       <DropdownMenu>
-        <DropdownMenuTrigger>
-          <Button variant="outline" className="gap-2 h-11 rounded-xl shadow-sm bg-background hidden sm:flex min-w-[110px] justify-between">
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4" /> 
-              <span>{filterOptions.find(o => o.value === fileTypeFilter)?.label || 'Filter'}</span>
-            </div>
-          </Button>
+        <DropdownMenuTrigger className="inline-flex items-center justify-between gap-2 h-11 rounded-xl shadow-sm bg-background border border-input hover:bg-accent hover:text-accent-foreground px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 flex min-w-[110px] outline-none w-full sm:w-auto">
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4" /> 
+            <span>{filterOptions.find(o => o.value === fileTypeFilter)?.label || 'Filter'}</span>
+          </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48 rounded-xl shadow-md border-border/60">
-          <DropdownMenuLabel className="text-xs text-muted-foreground font-semibold uppercase tracking-wider py-2">
-            File Type
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          {filterOptions.map((option) => (
-            <DropdownMenuItem 
-              key={option.value}
-              className="gap-2 cursor-pointer py-2.5 flex items-center justify-between" 
-              onClick={() => onFileTypeChange(option.value)}
-            >
-              <span className={fileTypeFilter === option.value ? 'font-medium' : ''}>
-                {option.label}
-              </span>
-              {fileTypeFilter === option.value && <Check className="w-4 h-4 text-primary" />}
-            </DropdownMenuItem>
-          ))}
+          <DropdownMenuGroup>
+            <DropdownMenuLabel className="text-xs text-muted-foreground font-semibold uppercase tracking-wider py-2">
+              File Type
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {filterOptions.map((option) => (
+              <DropdownMenuItem 
+                key={option.value}
+                className="gap-2 cursor-pointer py-2.5 flex items-center justify-between" 
+                onClick={() => onFileTypeChange(option.value)}
+              >
+                <span className={fileTypeFilter === option.value ? 'font-medium' : ''}>
+                  {option.label}
+                </span>
+                {fileTypeFilter === option.value && <Check className="w-4 h-4 text-primary" />}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

@@ -1,4 +1,5 @@
-import type { AIModel, ComparisonResult } from '@/services/compareService';
+import type { ModelDefinition as AIModel } from '@/services/ai/modelRegistry';
+import type { ComparisonResult } from '@/services/ai/types';
 import { ComparisonCard } from './ComparisonCard';
 import { getIcon } from './iconMap';
 
@@ -59,3 +60,4 @@ In summary, structure, discipline, and a distraction-free environment are key to
     </div>
   );
 }
+
