@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { searchService, type SearchResult } from '@/services/searchService';
+import { searchService, type SearchResult } from '@/services/search/searchService';
 
 export function useSearch() {
   const [query, setQuery] = useState('');
@@ -48,3 +48,4 @@ export function useSearch() {
     error
   };
 }
+

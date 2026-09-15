@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import type { VerificationData } from '@/services/verifyService';
+import type { VerificationData } from '@/services/ai/types';
 
 interface VerifyMobileDashboardProps {
   metrics: VerificationData['metrics'];
@@ -217,3 +217,4 @@ ${recommendations.map(r => `- ${r}`).join('\n')}`;
     </div>
   );
 }
+

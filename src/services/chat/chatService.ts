@@ -1,4 +1,6 @@
-import { apiClient } from './api';
+import { apiClient } from '@/services/api/client';
+import { aiService } from '@/services/ai/aiService';
+import type { AetherFile } from '@/services/files/fileService';
 
 export interface ChatMessage {
   id: string;
@@ -62,8 +64,6 @@ const MOCK_SUGGESTIONS: ChatSuggestion[] = [
   { iconName: 'Target', text: 'Create a marketing strategy for a SaaS product', color: 'text-blue-500' },
 ];
 
-const MOCK_AI_RESPONSE = "This is a mock response from the server. When the backend is connected, this text will be replaced by a real streaming response from the AI models.";
-
 // ----------------------------------------------------------------------
 // SERVICE METHODS
 // ----------------------------------------------------------------------
@@ -73,7 +73,8 @@ export interface SendMessageOptions {
   currentModel?: string;
   webSearchEnabled?: boolean;
   responseQuality?: string;
-  attachedFile?: File | null;
+  attachedFile?: File | AetherFile | null;
+  signal?: AbortSignal;
 }
 
 export const chatService = {
@@ -122,55 +123,34 @@ export const chatService = {
    * If options.chatId is null, it simulates creating a new chat and returning a new chatId.
    */
   sendMessage: async (message: string, options?: SendMessageOptions): Promise<{ message: ChatMessage, chatId: string }> => {
-    const responsePayload: ChatMessage = {
-      id: Date.now().toString(),
-      role: 'ai',
-      content: MOCK_AI_RESPONSE,
-      timestamp: new Date().toISOString(),
-      ...(options?.webSearchEnabled && {
-        sources: [
-          { title: 'LinkedIn - React Developer Guide', url: 'https://linkedin.com/pulse/react-guide' },
-          { title: 'Wikipedia - Quantum Physics', url: 'https://en.wikipedia.org/wiki/Quantum' }
-        ]
-      })
-    };
-    
     const resultingChatId = options?.chatId || `chat_${Date.now()}`;
 
-    // --- MOCK LOGIC START ---
-    if (options?.attachedFile) {
-      console.log(`[Mock Backend] Received file upload: ${options.attachedFile.name} (${options.attachedFile.size} bytes)`);
-    }
-
+    // --- MOCK LOGIC START (Keep state locally until backend is ready) ---
     if (!options?.chatId) {
        MOCK_HISTORY.unshift({ id: resultingChatId, title: message.substring(0, 30) + '...', date: 'Just now' });
        MOCK_MESSAGES_DB[resultingChatId] = [
-         { id: Date.now().toString(), role: 'user', content: message, timestamp: new Date().toISOString() },
-         responsePayload
+         { id: Date.now().toString(), role: 'user', content: message, timestamp: new Date().toISOString() }
        ];
     } else {
        if (!MOCK_MESSAGES_DB[resultingChatId]) MOCK_MESSAGES_DB[resultingChatId] = [];
        MOCK_MESSAGES_DB[resultingChatId].push({ id: Date.now().toString(), role: 'user', content: message, timestamp: new Date().toISOString() });
-       MOCK_MESSAGES_DB[resultingChatId].push(responsePayload);
     }
     // --- MOCK LOGIC END ---
 
-    // When backend is ready:
-    // const result = await apiClient.post('/api/chats/message', { message, ...options });
-    // return { message: result.message, chatId: result.chatId };
-    
-    return { message: responsePayload, chatId: resultingChatId };
+    // Delegate generation to the unified AI Service Layer
+    const aiResponse = await aiService.generateChatResponse(message, options);
+
+    // Update local mock DB with AI response
+    MOCK_MESSAGES_DB[resultingChatId].push(aiResponse);
+
+    return { message: aiResponse, chatId: resultingChatId };
   },
 
   /**
    * Rates an AI message up or down.
    */
   rateMessage: async (messageId: string, rating: 'up' | 'down'): Promise<void> => {
-    // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 300));
-    
-    // When backend is ready:
-    // await apiClient.post(`/api/chats/message/${messageId}/rate`, { rating });
     console.log(`[Backend Ready] Message ${messageId} rated ${rating}`);
   },
 
@@ -178,27 +158,8 @@ export const chatService = {
    * Asks the AI to try generating a message again, replacing the old one.
    */
   regenerateMessage: async (messageId: string, type: 'standard' | 'improve', options?: SendMessageOptions): Promise<ChatMessage> => {
-    // Simulate long generation delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    console.log(`[Mock Backend] Regenerating message ${messageId} (${type})`, options);
-    
-    const responsePayload: ChatMessage = {
-      id: Date.now().toString(),
-      role: 'ai',
-      content: type === 'improve' 
-        ? "Here is a much more detailed and comprehensive version of the previous response, drawing upon deeper insights and clearer examples...\n\n" + MOCK_AI_RESPONSE 
-        : "Let me try explaining that in a different way.\n\n" + MOCK_AI_RESPONSE,
-      timestamp: new Date().toISOString(),
-      ...(options?.webSearchEnabled && {
-        sources: [
-          { title: 'Improved AI Source', url: 'https://example.com/ai' }
-        ]
-      })
-    };
-
-    // When backend is ready:
-    // return apiClient.post(`/api/chats/message/${messageId}/regenerate`, { type, ...options });
-    
-    return responsePayload;
+    // Delegate generation to the unified AI Service Layer
+    return aiService.regenerateChatResponse(messageId, type, options);
   }
 };
+

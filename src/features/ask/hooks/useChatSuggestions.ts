@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { chatService } from '@/services/chatService';
-import type { ChatSuggestion } from '@/services/chatService';
+import { chatService } from '@/services/chat/chatService';
+import type { ChatSuggestion } from '@/services/chat/chatService';
 
 export function useChatSuggestions() {
   const [suggestions, setSuggestions] = useState<ChatSuggestion[]>([]);
@@ -26,3 +26,4 @@ export function useChatSuggestions() {
 
   return { suggestions, error };
 }
+

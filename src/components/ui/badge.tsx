@@ -1,5 +1,5 @@
-/* eslint-disable react-refresh/only-export-components */
 import { mergeProps } from "@base-ui/react/merge-props"
+/* eslint-disable react-refresh/only-export-components */
 import { useRender } from "@base-ui/react/use-render"
 import { cva, type VariantProps } from "class-variance-authority"
 

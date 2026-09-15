@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { compareService } from '@/services/compareService';
-import type { AIModel, ComparisonResult, CompareAnalysisData } from '@/services/compareService';
+import type { ModelDefinition as AIModel } from '@/services/ai/modelRegistry';
+import type { ComparisonResult, CompareAnalysisData } from '@/services/ai/types';
 
 import { useAppContext } from '@/context/AppContext';
 
@@ -12,39 +13,65 @@ export function useCompare() {
   const [selectedModels, setSelectedModels] = useState<AIModel[]>([]);
   const [results, setResults] = useState<ComparisonResult[]>([]);
   const [analysis, setAnalysis] = useState<CompareAnalysisData | null>(null);
-
+  
   const [error, setError] = useState<string | null>(null);
   const [modelFetchError, setModelFetchError] = useState<string | null>(null);
-
+  
+  const compareAbortControllerRef = useRef<AbortController | null>(null);
+  
   useEffect(() => {
+    const abortController = new AbortController();
+    
     const fetchModels = async () => {
       try {
         setModelFetchError(null);
-        const models = await compareService.getAvailableModels();
+        const models = await compareService.getAvailableModels({ signal: abortController.signal });
+        if (abortController.signal.aborted) return;
         setAllAvailableModels(models);
         setSelectedModels(models.slice(0, 3));
-      } catch (err) {
+      } catch (err: any) {
+        if (err.name === 'AbortError') return;
         console.error("Failed to fetch available models", err);
         setModelFetchError("Failed to load models. Please refresh the page.");
       }
     };
+    
     fetchModels();
+    
+    return () => {
+      abortController.abort();
+      if (compareAbortControllerRef.current) {
+        compareAbortControllerRef.current.abort();
+      }
+    };
   }, []);
 
   const handleCompare = async () => {
-    if (isComparing || !prompt.trim() || selectedModels.length === 0) return;
-
+    if (!prompt.trim() || selectedModels.length === 0) return;
+    
+    // Cancel any in-flight comparison request
+    if (compareAbortControllerRef.current) {
+      compareAbortControllerRef.current.abort();
+    }
+    
+    const abortController = new AbortController();
+    compareAbortControllerRef.current = abortController;
+    
     setIsComparing(true);
     setError(null);
     try {
-      const response = await compareService.comparePrompt(prompt, selectedModels.map(m => m.name), { webSearchEnabled });
+      const response = await compareService.comparePrompt(prompt, selectedModels.map(m => m.name), { webSearchEnabled, signal: abortController.signal });
+      if (abortController.signal.aborted) return;
       setResults(response.results);
       setAnalysis(response.analysis);
-    } catch (err) {
+    } catch (err: any) {
+      if (err.name === 'AbortError') return;
       setError("An error occurred while comparing the models. Please try again.");
       console.error(err);
     } finally {
-      setIsComparing(false);
+      if (!abortController.signal.aborted) {
+        setIsComparing(false);
+      }
     }
   };
 
@@ -64,10 +91,10 @@ export function useCompare() {
     setSelectedModels(prev => {
       const newModel = allAvailableModels.find(m => m.name === newModelName);
       if (!newModel) return prev;
-
+      
       const updated = [...prev];
       const existingIndex = updated.findIndex(m => m.name === newModelName);
-
+      
       if (existingIndex !== -1 && existingIndex !== index) {
         // If the model is already selected somewhere else, swap their positions
         updated[existingIndex] = prev[index];
@@ -96,3 +123,4 @@ export function useCompare() {
     swapModel
   };
 }
+

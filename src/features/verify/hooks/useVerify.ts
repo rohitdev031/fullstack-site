@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { verifyService, type VerificationData } from '@/services/verifyService';
+import { verifyService } from '@/services/verifyService';
+import type { VerificationData } from '@/services/ai/types';
 
 export function useVerify() {
   const location = useLocation();
@@ -13,26 +14,44 @@ export function useVerify() {
   const [selectedClaimIndex, setSelectedClaimIndex] = useState<number | null>(null);
 
   useEffect(() => {
+    const abortController = new AbortController();
+
     const fetchData = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        const data = await verifyService.getVerificationResults({ webSearchEnabled });
+        const data = await verifyService.getVerificationResults({ 
+          webSearchEnabled, 
+          signal: abortController.signal 
+        });
+        
+        if (abortController.signal.aborted) return;
+        
         // If an answer was passed via navigation state, override the mock original answer
         if (answerToVerify) {
           data.originalAnswer.text = answerToVerify;
         }
         setMockVerificationData(data);
-      } catch (err) {
+      } catch (err: any) {
+        if (err.name === 'AbortError') {
+          console.log('Request aborted');
+          return;
+        }
         console.error("Failed to fetch verification results:", err);
         setError("Unable to run verification at this time. Please try again later.");
       } finally {
-        setIsLoading(false);
+        if (!abortController.signal.aborted) {
+          setIsLoading(false);
+        }
       }
     };
-
+    
     fetchData();
-  }, [webSearchEnabled]);
+
+    return () => {
+      abortController.abort();
+    };
+  }, [webSearchEnabled, answerToVerify]);
 
   return {
     webSearchEnabled,
@@ -44,3 +63,4 @@ export function useVerify() {
     setSelectedClaimIndex
   };
 }
+

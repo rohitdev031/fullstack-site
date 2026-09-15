@@ -4,8 +4,8 @@ import { Plus, PanelLeftClose, PanelLeftOpen, MessageSquare } from 'lucide-react
 import { mainNavLinks } from './NavigationLinks';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { chatService } from '@/services/chatService';
-import type { ChatHistoryItem } from '@/services/chatService';
+import { chatService } from '@/services/chat/chatService';
+import type { ChatHistoryItem } from '@/services/chat/chatService';
 import { useAppContext } from '@/context/AppContext';
 
 export function Sidebar() {
@@ -65,7 +65,7 @@ export function Sidebar() {
 
   return (
     <aside className={`hidden md:flex flex-col ${isCollapsed ? 'w-20' : 'w-64'} transition-all duration-300 ease-in-out bg-sidebar text-sidebar-foreground border-r border-sidebar-border h-screen sticky top-0 z-50 overflow-hidden`}>
-
+      
       {/* Logo & Toggle */}
       <div className="p-4 flex flex-col gap-5 mb-2 border-b border-sidebar-border/30 pb-6">
         <div className={`flex items-center ${isCollapsed ? 'flex-col gap-6 pt-2' : 'justify-between px-1'}`}>
@@ -73,7 +73,7 @@ export function Sidebar() {
             <img src="/logo.jpg" alt="Aether" className="w-7 h-7 rounded-md object-cover shrink-0" />
             {!isCollapsed && <span className="whitespace-nowrap animate-in fade-in duration-300">Aether AI</span>}
           </div>
-          <button
+          <button 
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors shrink-0"
           >
@@ -113,7 +113,7 @@ export function Sidebar() {
           <div className="mt-4 pt-6 border-t border-sidebar-border/30 mb-2 animate-in fade-in duration-500 flex flex-col h-full">
             <h4 className="text-xs font-semibold text-sidebar-foreground/50 mb-3 px-7">History</h4>
             <div className="flex flex-col gap-5 overflow-y-auto scrollbar-hide px-2">
-
+              
               {error ? (
                 <div className="text-center px-4 py-3 flex flex-col items-center gap-2">
                   <span className="text-xs text-red-500/80">{error}</span>
@@ -129,8 +129,8 @@ export function Sidebar() {
                       {chats.map((chat) => {
                         const isActiveChat = chat.id === currentChatId;
                         return (
-                          <div
-                            key={chat.id}
+                          <div 
+                            key={chat.id} 
                             onClick={() => {
                               setCurrentChatId(chat.id);
                               navigate('/ask');
@@ -145,7 +145,7 @@ export function Sidebar() {
                     </div>
                   ))}
 
-                  <div
+                  <div 
                     onClick={handleToggleHistory}
                     className={`text-xs text-sidebar-foreground/50 hover:text-white pl-5 py-2.5 mx-2 mt-1 rounded-xl hover:bg-sidebar-accent/30 cursor-pointer transition-colors font-medium flex items-center gap-2 ${isLoadingHistory ? 'opacity-50 pointer-events-none' : ''}`}
                   >
@@ -160,7 +160,7 @@ export function Sidebar() {
 
       {/* Bottom Actions */}
       <div className={`p-4 flex flex-col gap-4 border-t border-sidebar-border/30 ${isCollapsed ? 'items-center' : ''}`}>
-
+        
         {/* User Profile & Settings */}
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-2 pt-2'}`}>
           <div className="flex items-center gap-3">
@@ -185,3 +185,4 @@ export function Sidebar() {
     </aside>
   );
 }
+

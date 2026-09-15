@@ -1,19 +1,20 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAppContext } from '@/context/AppContext';
-import { chatService } from '@/services/chatService';
-import { type Message, type ResponseQuality } from '../types';
+import { chatService } from '@/services/chat/chatService';
+import type { Message, ResponseQuality } from '../types';
+import type { AetherFile } from '@/services/files/fileService';
 
 export function useAskChat() {
-  const {
-    currentChatId, setCurrentChatId,
-    currentModel, setCurrentModel,
+  const { 
+    currentChatId, setCurrentChatId, 
+    currentModel, setCurrentModel, 
     webSearchEnabled, setWebSearchEnabled,
     setHistory
   } = useAppContext();
 
   const [prompt, setPrompt] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
-  const [attachedFile, setAttachedFile] = useState<File | null>(null);
+  const [attachedFile, setAttachedFile] = useState<File | AetherFile | null>(null);
   const [responseQuality, setResponseQuality] = useState<ResponseQuality>('Balanced');
   const [fileAccept, setFileAccept] = useState<string>('*/*');
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -21,15 +22,32 @@ export function useAskChat() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [isGenerating, setIsGenerating] = useState(false);
+  // We use state for isGenerating so it's exposed to the UI
+  const [isGeneratingState, setIsGeneratingState] = useState(false);
   const activeChatIdRef = useRef(currentChatId);
+  const chatAbortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     activeChatIdRef.current = currentChatId;
+    
+    // If the user switches chats, cancel any in-flight generation for the previous chat
+    if (chatAbortControllerRef.current) {
+      chatAbortControllerRef.current.abort();
+    }
+    
     if (currentChatId === null) {
       setMessages([]);
     }
   }, [currentChatId]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (chatAbortControllerRef.current) {
+        chatAbortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   // Fetch history when currentChatId changes
   useEffect(() => {
@@ -85,14 +103,20 @@ export function useAskChat() {
   };
 
   const handleSubmit = async (textToSubmit: string = prompt) => {
-    if (isGenerating) return;
-
+    if (isGeneratingState) return;
+    
     const file = attachedFile;
     const fileName = file ? file.name : null;
-
+    
     if (!textToSubmit.trim() && !file) return;
 
-    setIsGenerating(true);
+    if (chatAbortControllerRef.current) {
+      chatAbortControllerRef.current.abort();
+    }
+    const abortController = new AbortController();
+    chatAbortControllerRef.current = abortController;
+
+    setIsGeneratingState(true);
     const userMsg: Message = {
       id: Date.now().toString(),
       role: 'user',
@@ -117,7 +141,10 @@ export function useAskChat() {
         webSearchEnabled,
         responseQuality,
         attachedFile: file,
+        signal: abortController.signal
       });
+      
+      if (abortController.signal.aborted) return;
 
       // If it was a new chat, the backend generated an ID. We update our global state.
       if (currentChatId === null && activeChatIdRef.current === null) {
@@ -151,23 +178,34 @@ export function useAskChat() {
         }
         return msg;
       }));
-    } catch {
+    } catch (err: any) {
+      if (err.name === 'AbortError') return;
+      
       setMessages((prev) => prev.map(msg => msg.id === aiMsgId ? {
         ...msg,
         isLoading: false,
         content: 'Unable to get a response right now. Please try again.',
       } : msg));
     } finally {
-      setIsGenerating(false);
+      if (!abortController.signal.aborted) {
+        setIsGeneratingState(false);
+      }
     }
   };
 
   const handleRegenerate = async (messageId: string, type: 'standard' | 'improve') => {
-    if (isGenerating) return;
-    setIsGenerating(true);
-
+    if (isGeneratingState) return;
+    
+    if (chatAbortControllerRef.current) {
+      chatAbortControllerRef.current.abort();
+    }
+    const abortController = new AbortController();
+    chatAbortControllerRef.current = abortController;
+    
+    setIsGeneratingState(true);
+    
     // Set message to loading state
-    setMessages(prev => prev.map(msg =>
+    setMessages(prev => prev.map(msg => 
       msg.id === messageId ? { ...msg, isLoading: true, content: '' } : msg
     ));
 
@@ -177,9 +215,12 @@ export function useAskChat() {
         currentModel,
         webSearchEnabled,
         responseQuality,
+        signal: abortController.signal
       });
+      
+      if (abortController.signal.aborted) return;
 
-      setMessages(prev => prev.map(msg =>
+      setMessages(prev => prev.map(msg => 
         msg.id === messageId ? {
           ...msg,
           isLoading: false,
@@ -187,8 +228,10 @@ export function useAskChat() {
           sources: regeneratedMsg.sources,
         } : msg
       ));
-    } catch {
-      setMessages(prev => prev.map(msg =>
+    } catch (err: any) {
+      if (err.name === 'AbortError') return;
+      
+      setMessages(prev => prev.map(msg => 
         msg.id === messageId ? {
           ...msg,
           isLoading: false,
@@ -196,7 +239,9 @@ export function useAskChat() {
         } : msg
       ));
     } finally {
-      setIsGenerating(false);
+      if (!abortController.signal.aborted) {
+        setIsGeneratingState(false);
+      }
     }
   };
 
@@ -229,6 +274,8 @@ export function useAskChat() {
     setCurrentModel,
     webSearchEnabled,
     setWebSearchEnabled,
-    isGenerating,
+    isGenerating: isGeneratingState,
   };
 }
+
+

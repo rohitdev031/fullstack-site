@@ -7,16 +7,16 @@ import { SearchBar } from '@/features/search/components/SearchBar';
 
 export function MainLayout() {
   return (
-    <div className="flex min-h-screen bg-background text-foreground w-full relative overflow-hidden">
-
+    <div className="flex min-h-[100dvh] bg-background text-foreground w-full relative overflow-hidden">
+      
       {/* Figma Signature Premium Glowing Radial Background */}
       <div className="absolute top-[-10%] right-[-5%] w-200 h-150 bg-purple-500/10 rounded-full blur-[120px] pointer-events-none -z-10 hidden md:block"></div>
-
+      
       {/* Desktop Sidebar (hidden on mobile) */}
       <Sidebar />
-
+      
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden bg-transparent">
+      <div className="flex-1 flex flex-col min-w-0 h-[100dvh] overflow-hidden bg-transparent">
         {/* Mobile Top Navigation (hidden on desktop) */}
         <MobileNav />
 
@@ -35,9 +35,9 @@ export function MainLayout() {
              </Button>
           </div>
         </header>
-
+        
         {/* Scrollable Page Content */}
-        <main className="flex-1 overflow-y-auto w-full p-4 md:p-6 lg:p-8 pt-2 md:pt-4">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden w-full p-4 md:p-6 lg:p-8 pt-2 md:pt-4 flex flex-col">
           <Outlet />
         </main>
       </div>

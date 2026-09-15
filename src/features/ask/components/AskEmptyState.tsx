@@ -2,7 +2,7 @@ import { Sparkles, RotateCcw } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { getIcon } from '../iconMap';
-import type { ChatSuggestion } from '@/services/chatService';
+import type { ChatSuggestion } from '@/services/chat/chatService';
 
 type AskEmptyStateProps = {
   suggestions: ChatSuggestion[];
@@ -58,3 +58,4 @@ export function AskEmptyState({ suggestions, error, onSuggestionClick }: AskEmpt
     </div>
   );
 }
+

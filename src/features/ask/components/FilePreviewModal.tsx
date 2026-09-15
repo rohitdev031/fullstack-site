@@ -1,8 +1,9 @@
 import { FileText, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import type { AetherFile } from '@/services/files/fileService';
 
 type FilePreviewModalProps = {
-  attachedFile: File;
+  attachedFile: File | AetherFile;
   onClose: () => void;
 };
 
@@ -37,3 +38,4 @@ export function FilePreviewModal({ attachedFile, onClose }: FilePreviewModalProp
     </div>
   );
 }
+

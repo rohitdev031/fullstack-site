@@ -34,7 +34,7 @@ export function CompareView() {
         </div>
       ) : (
         <>
-          <CompareControls
+          <CompareControls 
             prompt={prompt}
             setPrompt={setPrompt}
             allAvailableModels={allAvailableModels}

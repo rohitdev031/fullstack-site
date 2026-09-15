@@ -3,7 +3,7 @@ import { Sparkles, Copy, RotateCcw, ThumbsUp, ThumbsDown, MoreHorizontal, Target
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { chatService } from '@/services/chatService';
+import { chatService } from '@/services/chat/chatService';
 import { type Message } from '../types';
 import { useNavigate } from 'react-router-dom';
 
@@ -29,7 +29,7 @@ export function ChatMessageCard({ message, currentModel, onRegenerate }: ChatMes
     // If they click the same button again, un-rate it. Otherwise, set it.
     const newRating = rating === type ? null : type;
     setRating(newRating);
-
+    
     // In a real app, you might pass 'none' or null to remove the rating.
     if (newRating) {
       await chatService.rateMessage(message.id, newRating);
@@ -73,13 +73,13 @@ export function ChatMessageCard({ message, currentModel, onRegenerate }: ChatMes
 
             {/* Actions */}
             <div className="flex flex-wrap items-center gap-3 pt-6 mt-4 border-t border-border/50">
-              <Button
-                variant="outline"
-                size="sm"
+              <Button 
+                variant="outline" 
+                size="sm" 
                 onClick={handleCopy}
                 className={`h-9 text-xs rounded-lg font-semibold border-border/60 shadow-xs transition-colors ${isCopied ? ['bg-green-50', 'dark:bg-green-900/20', 'text-green-600', 'border-green-200', 'dark:border-green-800'].join(' ') : ''}`}
               >
-                {isCopied ? <Check className="w-3.5 h-3.5 mr-2" /> : <Copy className="w-3.5 h-3.5 mr-2" />}
+                {isCopied ? <Check className="w-3.5 h-3.5 mr-2" /> : <Copy className="w-3.5 h-3.5 mr-2" />} 
                 {isCopied ? 'Copied!' : 'Copy'}
               </Button>
               <Button onClick={() => onRegenerate(message.id, 'standard')} variant="outline" size="sm" className="h-9 text-xs rounded-lg font-semibold border-border/60 shadow-xs"><RotateCcw className="w-3.5 h-3.5 mr-2" /> Regenerate</Button>
@@ -96,7 +96,7 @@ export function ChatMessageCard({ message, currentModel, onRegenerate }: ChatMes
             {/* Sources */}
             {message.sources && message.sources.length > 0 && (
               <div className="pt-5 mt-5 border-t border-border/50">
-                <div
+                <div 
                   onClick={() => setShowSources(!showSources)}
                   className="flex items-center justify-between cursor-pointer group select-none"
                 >
@@ -113,7 +113,7 @@ export function ChatMessageCard({ message, currentModel, onRegenerate }: ChatMes
                     <ChevronDown className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
                   )}
                 </div>
-
+                
                 {/* Expandable Sources List */}
                 {showSources && (
                   <div className="mt-4 flex flex-col gap-2 animate-in fade-in slide-in-from-top-2">
@@ -137,3 +137,4 @@ export function ChatMessageCard({ message, currentModel, onRegenerate }: ChatMes
     </Card>
   );
 }
+

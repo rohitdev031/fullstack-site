@@ -1,5 +1,5 @@
 import { Sparkles, FileText, PenTool, ArrowLeftRight, ShieldCheck, Globe, X } from 'lucide-react';
-import { AVAILABLE_MODELS, type ModelId } from '../types';
+import { AVAILABLE_MODELS, type ModelId } from '@/services/ai/modelRegistry';
 import { useTip } from '../hooks/useTip';
 
 type AskSidebarProps = {
@@ -11,13 +11,13 @@ type AskSidebarProps = {
   onToggleWebSearch: () => void;
 };
 
-export function AskSidebar({
-  currentModel,
-  onAnalyzeDocument,
-  onWriteContent,
-  onCompareModels,
-  onVerifyAnswer,
-  onToggleWebSearch
+export function AskSidebar({ 
+  currentModel, 
+  onAnalyzeDocument, 
+  onWriteContent, 
+  onCompareModels, 
+  onVerifyAnswer, 
+  onToggleWebSearch 
 }: AskSidebarProps) {
   const { tip, isVisible, dismissTip } = useTip();
   const modelName = AVAILABLE_MODELS.find(m => m.id === currentModel)?.name || currentModel;
@@ -78,8 +78,8 @@ export function AskSidebar({
           <p className="text-xs text-indigo-800/80 leading-relaxed font-medium">
             {tip.content}
           </p>
-          <button
-            onClick={dismissTip}
+          <button 
+            onClick={dismissTip} 
             className="absolute top-4 right-4 text-indigo-400 hover:text-indigo-600 transition-colors opacity-0 group-hover:opacity-100"
           >
             <X className="w-3.5 h-3.5" />
@@ -90,3 +90,4 @@ export function AskSidebar({
     </div>
   );
 }
+

@@ -1,9 +1,9 @@
 import { ShieldCheck, CheckCircle2, AlertTriangle, XCircle, Search, FileText, Upload, ArrowRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import type { VerificationData } from '@/services/verifyService';
+import type { VerificationData } from '@/services/ai/types';
 import { useAppContext } from '@/context/AppContext';
-import { AVAILABLE_MODELS } from '@/features/ask/types';
+import { AVAILABLE_MODELS } from '@/services/ai/modelRegistry';
 
 interface VerifySidebarProps {
   metrics: VerificationData['metrics'];
@@ -23,19 +23,19 @@ export function VerifySidebar({ metrics, keyIssues, recommendations, settings }:
 
   return (
     <div className="hidden xl:flex flex-col w-85 gap-6 shrink-0">
-
+      
       {/* Verification Summary */}
       <div className="bg-card text-card-foreground shadow-sm border border-border/50 rounded-2xl p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="font-bold text-[15px] flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-indigo-600" /> Verification Summary
           </h3>
-          <Badge
-            variant="outline"
+          <Badge 
+            variant="outline" 
             className={`font-bold px-2.5 py-0.5 text-[11px] ${
-              metrics.incorrect > 0
-                ? ['bg-red-50', 'text-red-700', 'border-red-200', 'dark:bg-red-900/20', 'dark:border-red-800'].join(' ')
-                : metrics.partiallyCorrect > 0
+              metrics.incorrect > 0 
+                ? ['bg-red-50', 'text-red-700', 'border-red-200', 'dark:bg-red-900/20', 'dark:border-red-800'].join(' ') 
+                : metrics.partiallyCorrect > 0 
                   ? ['bg-amber-50', 'text-amber-700', 'border-amber-200', 'dark:bg-amber-900/20', 'dark:border-amber-800'].join(' ')
                   : ['bg-emerald-50', 'text-emerald-700', 'border-emerald-200', 'dark:bg-emerald-900/20', 'dark:border-emerald-800'].join(' ')
             }`}
@@ -123,7 +123,7 @@ export function VerifySidebar({ metrics, keyIssues, recommendations, settings }:
       {/* Quick Tools */}
       <div className="flex flex-col gap-4 mt-4 mb-10">
         <h4 className="font-bold text-[13px] text-foreground">Quick Tools</h4>
-
+        
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-3 text-[13px] font-bold text-foreground cursor-pointer hover:text-indigo-600 transition-colors group">
             <div className={['w-6 h-6 rounded-md', 'bg-indigo-50', 'dark:bg-indigo-900/20', 'text-indigo-600 flex items-center justify-center group-hover:bg-indigo-100 transition-colors'].join(' ')}>
@@ -131,7 +131,7 @@ export function VerifySidebar({ metrics, keyIssues, recommendations, settings }:
             </div>
             Search for Supporting Evidence
           </div>
-
+          
           <div className="flex items-center gap-3 text-[13px] font-bold text-foreground cursor-pointer hover:text-indigo-600 transition-colors group">
             <div className={['w-6 h-6 rounded-md', 'bg-indigo-50', 'dark:bg-indigo-900/20', 'text-indigo-600 flex items-center justify-center group-hover:bg-indigo-100 transition-colors'].join(' ')}>
               <ShieldCheck className="w-3.5 h-3.5" />
@@ -146,7 +146,7 @@ export function VerifySidebar({ metrics, keyIssues, recommendations, settings }:
             Generate Summary Report
           </div>
 
-          <div
+          <div 
             onClick={() => {
               const content = `Verification Report
 Model: ${selectedModelObj.name}
@@ -162,7 +162,7 @@ ${keyIssues.map(i => `- [${i.priority}] ${i.title}: ${i.description}`).join('\n'
 
 Recommendations:
 ${recommendations.map(r => `- ${r}`).join('\n')}`;
-
+              
               const blob = new Blob([content], { type: 'text/plain' });
               const url = URL.createObjectURL(blob);
               const a = document.createElement('a');
@@ -183,3 +183,5 @@ ${recommendations.map(r => `- ${r}`).join('\n')}`;
     </div>
   );
 }
+
+

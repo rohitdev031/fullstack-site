@@ -2,7 +2,7 @@ import { Sparkles } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAppContext } from '@/context/AppContext';
-import { type ModelId, AVAILABLE_MODELS } from '@/features/ask/types';
+import { AVAILABLE_MODELS, type ModelId } from '@/services/ai/modelRegistry';
 
 interface VerifyControlsProps {
   webSearchEnabled: boolean;
@@ -16,7 +16,7 @@ export function VerifyControls({ webSearchEnabled, setWebSearchEnabled }: Verify
   return (
     <div className="hidden md:flex items-center gap-5 mt-2 shrink-0">
       <h3 className="font-bold text-[15px]">Independent Verification</h3>
-
+      
       <div className="w-48">
         <Select value={currentModel} onValueChange={(val) => setCurrentModel(val as ModelId)}>
           <SelectTrigger className="flex items-center justify-between w-full h-9 p-2 px-3 bg-background border border-border/60 hover:border-border cursor-pointer transition-colors rounded-lg shadow-xs text-[13px] font-bold">
@@ -44,3 +44,4 @@ export function VerifyControls({ webSearchEnabled, setWebSearchEnabled }: Verify
     </div>
   );
 }
+
