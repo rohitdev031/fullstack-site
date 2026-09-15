@@ -22,6 +22,23 @@ class AIModel(models.Model):
         return f"{self.name} ({self.provider})"
 
 
+class AnonymousClient(models.Model):
+    """
+    Temporary anonymous client identity for session ownership.
+    One client_token per browser/client — can own multiple ChatSessions.
+    TODO (Day 14): Replace with JWT user authentication.
+    When JWT is ready, filter will switch from anonymous_client__client_token to user=request.user.
+    """
+    client_token = models.UUIDField(default=uuid.uuid4, unique=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'anonymous_clients'
+
+    def __str__(self):
+        return f"AnonymousClient({self.client_token})"
+
+
 class ChatSession(models.Model):
     """
     ASK Mode Conversation Session.
@@ -30,6 +47,14 @@ class ChatSession(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='chat_sessions'
+    )
+    # TODO (Day 14): Remove anonymous_client once JWT auth is active.
+    anonymous_client = models.ForeignKey(
+        AnonymousClient,
+        on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name='chat_sessions'
@@ -48,6 +73,7 @@ class ChatSession(models.Model):
         ordering = ['-updated_at']
         indexes = [
             models.Index(fields=['user', '-updated_at']),
+            models.Index(fields=['anonymous_client', '-updated_at']),
         ]
 
     def __str__(self):

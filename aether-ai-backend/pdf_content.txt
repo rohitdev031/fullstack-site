@@ -1,0 +1,207 @@
+Aether AI Chat · Zaid UX + Backend Developer Instructions · Owner: Azharuddin
+Page 1
+AETHER AI CHAT
+Individual Instructions · Zaid
+UX + Backend Developer · UX-Backend-Employee Owner
+ASK → COMPARE → VERIFY
+Smart for beginners · Powerful for professionals, developers & researchers
+24 AUG 2026 — 12 SEP 2026
+15 working days · 8 hours/day
+Reports only to: Azharuddin
+Role & Ownership
+YOUR MISSION
+Own the complete UX-Backend-Employee package and
+build the product experience + backend required to make
+Aether AI fully match the PDF vision: ASK → COMPARE
+→ VERIFY.
+STRICT BOUNDARY
+Work only inside UX-Backend-Employee. Do not modify
+UI-Employee files. Import UI components from that
+package only.
+Package Structure
+UX-Backend-Employee/
+III src/
+I III components/ux/ ← AetherWorkspace and related UX components
+I III hooks/
+I III integrations/
+I III lib/ ← chat logic, models, persistence, stream, etc.
+I III routes/ ← All routes (pages + api)
+I III router.tsx
+I III routeTree.gen.ts
+I III server.ts
+I III start.ts
+III supabase/
+III .env
+Delivery Snapshot
+15
+6
+3
+1
+Working Days
+Core Work Areas
+Product Modes
+Final Review Owner
+Aether AI Chat · Zaid UX + Backend Developer Instructions · Owner: Azharuddin
+Page 2
+CORE DIFFERENTIATOR
+Compare + Verify are the real differentiators of Aether AI. Build them carefully, reliably and with production-quality
+architecture.
+Aether AI Chat · Zaid UX + Backend Developer Instructions · Owner: Azharuddin
+Page 3
+Zaid's 15-Day UX + Backend Execution Plan
+WEEK 1
+Foundation + ASK Experience
+DAY 1
+Mon 24 Aug · Foundation + Technical Specification
+Focus & Tasks
+• Thoroughly study the PDF document.
+• Map the current codebase against required Compare, Verify, Recommendation and Files features.
+• Write a clear technical specification and share it with Azharuddin by end of day.
+Deliverable: Approved technical specification and feature/codebase map.
+DAY 2
+Tue 25 Aug · Core Chat Architecture
+Focus & Tasks
+• Strengthen message structure, threading and streaming foundation.
+• Design solid data models for Compare sessions.
+• Design solid data models for Verify reviews.
+Deliverable: Stable chat foundation plus reviewed Compare/Verify data models.
+DAY 3
+Wed 26 Aug · ASK + Smart Recommendation
+Focus & Tasks
+• Implement basic smart model recommendation logic.
+• Improve the main ASK flow inside AetherWorkspace.
+Deliverable: Working recommendation path and improved ASK flow.
+DAY 4
+Thu 27 Aug · ASK Completion
+Focus & Tasks
+• Complete the basic recommendation engine.
+• Improve conversation continuity and persistence.
+• Run end-to-end testing of the improved ASK experience.
+Deliverable: Reliable ASK experience with persistence and recommendation.
+WEEK 2
+COMPARE Mode
+DAY 5
+Fri 28 Aug · COMPARE Backend Foundation
+Focus & Tasks
+• Design and implement backend structure for multi-model comparison sessions.
+• Prepare required APIs and data handling for Compare Mode.
+Deliverable: Compare session model and integration-ready APIs.
+DAY 6
+Mon 1 Sep · COMPARE Core Logic
+Focus & Tasks
+• Send the same prompt to multiple models.
+• Store structured comparison results properly.
+Deliverable: Core multi-model comparison execution and persistence.
+Aether AI Chat · Zaid UX + Backend Developer Instructions · Owner: Azharuddin
+Page 4
+DAY 7
+Tue 2 Sep · COMPARE Integration
+Focus & Tasks
+• Fully integrate Compare Mode with UI components.
+• Allow users to start a comparison from any existing answer.
+Deliverable: End-to-end Compare initiation and UI/backend integration.
+DAY 8
+Wed 3 Sep · COMPARE Reliability
+Focus & Tasks
+• Complete testing, edge cases and performance work.
+• Ensure streaming multiple models works reliably.
+• Fix Compare bugs and stability issues.
+Deliverable: Reliable, performant Compare Mode under realistic conditions.
+WEEK 3
+VERIFY Mode + Files
+DAY 9
+Thu 4 Sep · VERIFY Backend Foundation
+Focus & Tasks
+• Design data structure and backend logic for independent verification.
+• Prepare the flow: take one answer and send it to another model for review.
+Deliverable: Verify review model and backend verification flow.
+DAY 10
+Fri 5 Sep · VERIFY Core Flow
+Focus & Tasks
+• Implement the full Verify flow.
+• Connect Verify with previous answers and Compare results.
+Deliverable: Integration-ready Verify flow connected to existing context.
+DAY 11
+Mon 8 Sep · VERIFY Completion
+Focus & Tasks
+• Complete Verify Mode end-to-end.
+• Run full flow testing: ASK → COMPARE → VERIFY.
+Deliverable: Working end-to-end product flow across all three modes.
+DAY 12
+Tue 9 Sep · Files + Analysis
+Focus & Tasks
+• Implement file upload and storage.
+• Implement file analysis: summarize, extract information and ask questions on files.
+Deliverable: Working file upload, persistence and analysis experience.
+FINAL STRETCH
+Conversation, Hardening + Production
+Aether AI Chat · Zaid UX + Backend Developer Instructions · Owner: Azharuddin
+Page 5
+DAY 13
+Wed 10 Sep · Conversation + Beginner Guidance
+Focus & Tasks
+• Strengthen conversation organization and history.
+• Improve beginner recommendation paths.
+• Improve overall guidance logic.
+Deliverable: Organized conversation experience and stronger beginner path.
+DAY 14
+Thu 11 Sep · System Hardening
+Focus & Tasks
+• Full system testing of all flows.
+• Improve performance and error handling.
+• Strengthen streaming reliability.
+• Test and fix edge cases.
+Deliverable: Stable system with production-grade error and performance handling.
+DAY 15
+Fri 12 Sep · Production Readiness + Handover
+Focus & Tasks
+• Complete final backend cleanup and production readiness.
+• Fix all points from Azharuddin's final review.
+• Support joint testing and handover.
+• Target 6–7 focused hours.
+Deliverable: Clean, stable, production-ready UX-Backend-Employee package.
+Aether AI Chat · Zaid UX + Backend Developer Instructions · Owner: Azharuddin
+Page 6
+Mandatory Daily Rules
+01
+10:00 AM update
+Send today's plan.
+02
+7:00 PM update
+Send completed work plus blockers.
+03
+Daily push
+Push code at the end of every day.
+04
+Working state
+Keep the application working every day; no broken main flows.
+05
+Discuss architecture
+Any new data structure, API shape or major UX decision must be discussed with Azharuddin first.
+06
+Engineering quality
+Prioritize clean architecture, proper TypeScript and good error handling.
+07
+Mobile parity
+Mobile experience for the flows you build is equally important.
+08
+Escalate blockers
+If blocked or unsure, message Azharuddin immediately. Do not wait or assume.
+Success Criteria · 12 September
+01
+Solid and reliable ASK experience with smart model recommendation.
+02
+Fully working Compare Mode with multiple models and clear structured results.
+03
+Fully working Verify Mode with independent review of any answer.
+04
+Proper file upload and analysis.
+05
+Good conversation continuity and organization.
+06
+Clean architecture and stable performance.
+07
+Smooth end-to-end flow: ASK → COMPARE → VERIFY.
+FINAL DIRECTION FROM AZHARUDDIN
+We are building the real differentiator of Aether AI: Compare + Verify. Work carefully and with high quality.
+Official work begins: 24 August 2026.
