@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { compareService } from '@/services/compareService';
-import type { ModelDefinition as AIModel } from '@/services/ai/modelRegistry';
+import { compareService, type AIModel } from '@/services/compareService';
 import type { ComparisonResult, CompareAnalysisData } from '@/services/ai/types';
 
 import { useAppContext } from '@/context/AppContext';
@@ -28,7 +27,7 @@ export function useCompare() {
     const fetchModels = async () => {
       try {
         setModelFetchError(null);
-        const models = await compareService.getAvailableModels({ signal: abortController.signal });
+        const models = await compareService.getAvailableModels();
         if (abortController.signal.aborted) return;
         setAllAvailableModels(models);
         setSelectedModels(models.slice(0, 3));

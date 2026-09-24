@@ -1,4 +1,4 @@
-import { apiClient } from '@/services/api/client';
+// import { apiClient } from '@/services/api/client';
 import { aiService } from '@/services/ai/aiService';
 import type { AetherFile } from '@/services/files/fileService';
 
@@ -221,7 +221,7 @@ export const chatService = {
       
       if (sessionData.client_token) {
         clientToken = sessionData.client_token;
-        localStorage.setItem('x-client-token', clientToken);
+        localStorage.setItem('x-client-token', clientToken as string);
       }
     }
 

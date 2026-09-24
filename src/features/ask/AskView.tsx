@@ -70,7 +70,7 @@ export function AskView() {
               onSuggestionClick={async (text) => {
                 const recommendedModel = await chatService.recommendModel(text);
                 if (recommendedModel) {
-                  setCurrentModel(recommendedModel);
+                  setCurrentModel(recommendedModel as any);
                 }
                 handleSubmit(text, recommendedModel || undefined);
               }}

@@ -66,7 +66,7 @@ export function useAskChat() {
           // Restore the model used in this conversation
           const lastAiMsg = [...oldMessages].reverse().find(m => m.role === 'ai' && m.model_used);
           if (lastAiMsg && lastAiMsg.model_used) {
-            setCurrentModel(lastAiMsg.model_used as ModelId);
+            setCurrentModel(lastAiMsg.model_used as any);
           }
         }
       } catch (error) {
