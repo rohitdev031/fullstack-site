@@ -1,4 +1,4 @@
-import type { ModelDefinition as AIModel } from '@/services/ai/modelRegistry';
+import type { AIModel } from '@/services/compareService';
 import type { ComparisonResult } from '@/services/ai/types';
 import { ComparisonCard } from './ComparisonCard';
 import { getIcon } from './iconMap';
