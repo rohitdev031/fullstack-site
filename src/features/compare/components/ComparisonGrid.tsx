@@ -46,6 +46,7 @@ In summary, structure, discipline, and a distraction-free environment are key to
         return (
           <ComparisonCard 
             key={model.name}
+            id={result?.id}
             model={model.name} 
             icon={getIcon(model.iconName)}
             match={i === 1 ? "Excellent match" : "Good match"}

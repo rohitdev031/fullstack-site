@@ -62,6 +62,12 @@ export function useAskChat() {
         const oldMessages = await chatService.getChatMessages(currentChatId);
         if (isActive) {
           setMessages(oldMessages as Message[]);
+          
+          // Restore the model used in this conversation
+          const lastAiMsg = [...oldMessages].reverse().find(m => m.role === 'ai' && m.model_used);
+          if (lastAiMsg && lastAiMsg.model_used) {
+            setCurrentModel(lastAiMsg.model_used as ModelId);
+          }
         }
       } catch (error) {
         console.error("Failed to load chat history:", error);
@@ -102,13 +108,13 @@ export function useAskChat() {
     }, 0);
   };
 
-  const handleSubmit = async (textToSubmit: string = prompt) => {
+  const handleSubmit = async (textToSubmit: string = prompt, recommendedModel?: string) => {
     if (isGeneratingState) return;
     
     const file = attachedFile;
     const fileName = file ? file.name : null;
     
-    if (!textToSubmit.trim() && !file) return;
+    if (!textToSubmit.trim()) return;
 
     if (chatAbortControllerRef.current) {
       chatAbortControllerRef.current.abort();
@@ -137,7 +143,7 @@ export function useAskChat() {
     try {
       const { message, chatId } = await chatService.sendMessage(textToSubmit, {
         chatId: currentChatId,
-        currentModel,
+        currentModel: recommendedModel || currentModel,
         webSearchEnabled,
         responseQuality,
         attachedFile: file,
@@ -171,6 +177,7 @@ export function useAskChat() {
         if (msg.id === aiMsgId) {
           return {
             ...msg,
+            id: message.id, // Overwrite temporary ID with the real backend UUID
             isLoading: false,
             content: message.content,
             sources: message.sources,

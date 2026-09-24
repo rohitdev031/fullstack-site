@@ -43,6 +43,7 @@ class StreamChatResponseView(APIView):
         prompt = request.data.get('prompt')
         model_slug = request.data.get('model_slug')
         parent_message_id = request.data.get('parent_message_id')
+        document_id = request.data.get('document_id')
 
         if not session_id or not prompt or not model_slug:
             return Response(
@@ -61,7 +62,8 @@ class StreamChatResponseView(APIView):
             prompt=prompt,
             model_slug=model_slug,
             client_token=str(client.client_token),
-            parent_message_id=parent_message_id
+            parent_message_id=parent_message_id,
+            document_id=document_id
         )
 
         # Return StreamingHttpResponse configured for SSE

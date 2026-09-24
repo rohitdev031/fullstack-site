@@ -9,7 +9,7 @@ class BaseAIProvider(ABC):
     """
 
     @abstractmethod
-    def generate_response(self, prompt: str, model_slug: str, system_prompt: str = "") -> Dict[str, Any]:
+    def generate_response(self, prompt: str, api_model_id: str, system_prompt: str = "") -> Dict[str, Any]:
         """
         Generate complete non-streaming AI response.
         Returns dict with keys: content, model_slug, latency_ms, token_count.
@@ -17,7 +17,7 @@ class BaseAIProvider(ABC):
         pass
 
     @abstractmethod
-    def stream_response(self, prompt: str, model_slug: str, system_prompt: str = "") -> Generator[str, None, None]:
+    def stream_response(self, prompt: str, api_model_id: str, system_prompt: str = "") -> Generator[str, None, None]:
         """
         Stream AI response token-by-token (chunk by chunk) as a Python generator.
         Yields text chunks in real-time.

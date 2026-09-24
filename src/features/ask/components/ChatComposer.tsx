@@ -122,9 +122,9 @@ export function ChatComposer({
             Auto <ChevronDown className="w-4 h-4 text-muted-foreground" />
           </Button>
           <Button
-            className={`rounded-xl h-10 w-12 px-0 shadow-sm transition-all ${prompt.trim() || attachedFile ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : 'bg-muted text-muted-foreground'}`}
+            className={`rounded-xl h-10 w-12 px-0 shadow-sm transition-all ${prompt.trim() ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : 'bg-muted text-muted-foreground'}`}
             onClick={() => handleSubmit()}
-            disabled={!prompt.trim() && !attachedFile}
+            disabled={!prompt.trim()}
           >
             <Send className="w-4 h-4" />
           </Button>

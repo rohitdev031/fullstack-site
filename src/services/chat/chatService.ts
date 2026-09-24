@@ -8,6 +8,7 @@ export interface ChatMessage {
   content: string;
   timestamp: string;
   sources?: { title: string; url: string; snippet?: string }[];
+  model_used?: string;
 }
 
 export interface ChatHistoryItem {
@@ -26,36 +27,8 @@ export interface ChatSuggestion {
 // MOCK DATA
 // (The backend developer can delete this section when APIs are ready)
 // ----------------------------------------------------------------------
-let MOCK_HISTORY: ChatHistoryItem[] = [
-  { id: '1', title: 'Quantum computing explained', date: 'Today' },
-  { id: '2', title: 'Python prime number function', date: 'Today' },
-  { id: '3', title: 'Latest AI trends 2024 summary', date: 'Yesterday' },
-];
 
-const EXTENDED_MOCK_HISTORY: ChatHistoryItem[] = [
-  { id: '4', title: 'How to center a div in CSS', date: 'Previous 7 Days' },
-  { id: '5', title: 'Next.js 14 App Router vs Pages', date: 'Previous 7 Days' },
-  { id: '6', title: 'Best practices for REST APIs', date: 'Previous 7 Days' },
-  { id: '7', title: 'Explain the theory of relativity', date: 'Previous 30 Days' },
-  { id: '8', title: 'Healthy dinner recipes under 30m', date: 'Previous 30 Days' },
-  { id: '9', title: 'How to negotiate a salary', date: 'Previous 30 Days' },
-  { id: '10', title: 'Learning Rust coming from JS', date: 'Previous 30 Days' },
-];
 
-let MOCK_MESSAGES_DB: Record<string, ChatMessage[]> = {
-  '1': [
-    { id: 'm1_1', role: 'user', content: 'Explain quantum computing in simple terms', timestamp: new Date(Date.now() - 60000).toISOString() },
-    { id: 'm1_2', role: 'ai', content: 'Quantum computing is a type of computing that uses quantum mechanics to perform operations on data faster than classical computers. Unlike classical bits (0 or 1), quantum bits (qubits) can exist in multiple states simultaneously.', timestamp: new Date(Date.now() - 55000).toISOString() }
-  ],
-  '2': [
-    { id: 'm2_1', role: 'user', content: 'Write a Python function to check prime numbers', timestamp: new Date(Date.now() - 60000).toISOString() },
-    { id: 'm2_2', role: 'ai', content: '```python\ndef is_prime(n):\n    if n <= 1:\n        return False\n    for i in range(2, int(n**0.5) + 1):\n        if n % i == 0:\n            return False\n    return True\n```', timestamp: new Date(Date.now() - 55000).toISOString() }
-  ],
-  '3': [
-    { id: 'm3_1', role: 'user', content: 'Summarize the latest AI trends in 2024', timestamp: new Date(Date.now() - 60000).toISOString() },
-    { id: 'm3_2', role: 'ai', content: 'In 2024, AI trends are dominated by multimodal models, agentic workflows, and highly efficient smaller models running locally on edge devices.', timestamp: new Date(Date.now() - 55000).toISOString() }
-  ]
-};
 
 const MOCK_SUGGESTIONS: ChatSuggestion[] = [
   { iconName: 'Atom', text: 'Explain quantum computing in simple terms', color: 'text-purple-500' },
@@ -74,7 +47,60 @@ export interface SendMessageOptions {
   webSearchEnabled?: boolean;
   responseQuality?: string;
   attachedFile?: File | AetherFile | null;
+  documentId?: string;
   signal?: AbortSignal;
+}
+
+function formatDateCategory(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  
+  // Calculate difference in days, resetting time to midnight for accurate day comparison
+  const dateMidnight = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const diffDays = Math.floor((nowMidnight.getTime() - dateMidnight.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    return 'Today';
+  } else if (diffDays === 1) {
+    return 'Yesterday';
+  } else if (diffDays <= 7) {
+    return 'Previous 7 Days';
+  } else if (diffDays <= 30) {
+    return 'Previous 30 Days';
+  } else {
+    return date.toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+  }
+}
+
+async function fetchHistoryFromBackend(): Promise<ChatHistoryItem[]> {
+  try {
+    const clientToken = localStorage.getItem('x-client-token');
+    const headers: Record<string, string> = {};
+    if (clientToken) {
+      headers['X-Client-Token'] = clientToken;
+    }
+    
+    const response = await fetch('http://127.0.0.1:8000/api/chats/sessions/', {
+      method: 'GET',
+      headers
+    });
+
+    if (!response.ok) {
+      console.warn('Failed to fetch chat sessions, backend returned:', response.status);
+      return [];
+    }
+
+    const data = await response.json();
+    return data.map((session: any) => ({
+      id: session.session_id,
+      title: session.title,
+      date: formatDateCategory(session.updated_at),
+    }));
+  } catch (error) {
+    console.error('Network error fetching chat sessions:', error);
+    return [];
+  }
 }
 
 export const chatService = {
@@ -82,24 +108,43 @@ export const chatService = {
    * Fetches the user's recent chat history for the sidebar (collapsed view).
    */
   getChatHistory: async (): Promise<ChatHistoryItem[]> => {
-    return MOCK_HISTORY;
+    return fetchHistoryFromBackend();
   },
 
   /**
    * Fetches the expanded chat history (View All).
    */
   getFullChatHistory: async (): Promise<ChatHistoryItem[]> => {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 400));
-    // When backend ready: return apiClient.get('/api/chats/history?full=true');
-    return [...MOCK_HISTORY, ...EXTENDED_MOCK_HISTORY];
+    return fetchHistoryFromBackend();
   },
 
   /**
    * Fetches chat suggestions for the empty state.
    */
   getSuggestions: async (): Promise<ChatSuggestion[]> => {
-    return apiClient.get('/api/chats/suggestions', MOCK_SUGGESTIONS);
+    return MOCK_SUGGESTIONS;
+  },
+
+  /**
+   * Recommends the best AI model for a given prompt using the backend API.
+   */
+  recommendModel: async (prompt: string): Promise<string | null> => {
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/chats/recommend/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ prompt })
+      });
+      if (!response.ok) return null;
+      
+      const data = await response.json();
+      return data.recommended_model || null;
+    } catch (error) {
+      console.error('Failed to get model recommendation:', error);
+      return null;
+    }
   },
 
 
@@ -108,42 +153,114 @@ export const chatService = {
    * Fetches the full message history for a specific chat.
    */
   getChatMessages: async (chatId: string): Promise<ChatMessage[]> => {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 600));
+    try {
+      const clientToken = localStorage.getItem('x-client-token');
+      const headers: Record<string, string> = {};
+      if (clientToken) {
+        headers['X-Client-Token'] = clientToken;
+      }
+      
+      const response = await fetch(`http://127.0.0.1:8000/api/chats/sessions/${chatId}/history/`, {
+        method: 'GET',
+        headers
+      });
 
-    // When backend is ready:
-    // return apiClient.get(`/api/chats/${chatId}/messages`);
-    
-    // Mock response for testing
-    return MOCK_MESSAGES_DB[chatId] || [];
+      if (!response.ok) {
+        console.warn('Failed to fetch chat history, backend returned:', response.status);
+        return [];
+      }
+
+      const data = await response.json();
+      
+      return (data.messages || []).map((msg: any) => ({
+        id: msg.message_id,
+        role: msg.role === 'assistant' ? 'ai' : msg.role,
+        content: msg.content,
+        timestamp: msg.created_at,
+        model_used: msg.model_used,
+      }));
+    } catch (error) {
+      console.error('Network error fetching chat history:', error);
+      return [];
+    }
   },
 
   /**
    * Sends a new message to the AI and gets a response.
-   * If options.chatId is null, it simulates creating a new chat and returning a new chatId.
+   * If options.chatId is null, it creates a new session in the backend.
    */
   sendMessage: async (message: string, options?: SendMessageOptions): Promise<{ message: ChatMessage, chatId: string }> => {
-    const resultingChatId = options?.chatId || `chat_${Date.now()}`;
+    let resultingChatId = options?.chatId;
+    let clientToken = localStorage.getItem('x-client-token');
 
-    // --- MOCK LOGIC START (Keep state locally until backend is ready) ---
-    if (!options?.chatId) {
-       MOCK_HISTORY.unshift({ id: resultingChatId, title: message.substring(0, 30) + '...', date: 'Just now' });
-       MOCK_MESSAGES_DB[resultingChatId] = [
-         { id: Date.now().toString(), role: 'user', content: message, timestamp: new Date().toISOString() }
-       ];
-    } else {
-       if (!MOCK_MESSAGES_DB[resultingChatId]) MOCK_MESSAGES_DB[resultingChatId] = [];
-       MOCK_MESSAGES_DB[resultingChatId].push({ id: Date.now().toString(), role: 'user', content: message, timestamp: new Date().toISOString() });
+    // Create session if it doesn't exist
+    if (!resultingChatId) {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      if (clientToken) {
+        headers['X-Client-Token'] = clientToken;
+      }
+
+      const sessionResponse = await fetch('http://127.0.0.1:8000/api/chats/sessions/', {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({
+          model_slug: options?.currentModel || 'gpt-4o',
+          title: message.substring(0, 30) + '...'
+        }),
+        signal: options?.signal
+      });
+
+      if (!sessionResponse.ok) {
+        throw new Error('Failed to create chat session');
+      }
+
+      const sessionData = await sessionResponse.json();
+      resultingChatId = sessionData.session_id;
+      
+      if (sessionData.client_token) {
+        clientToken = sessionData.client_token;
+        localStorage.setItem('x-client-token', clientToken);
+      }
     }
-    // --- MOCK LOGIC END ---
+
+    // Upload attached file if present
+    let documentId: string | undefined;
+    if (options?.attachedFile && options.attachedFile instanceof File) {
+      const formData = new FormData();
+      formData.append('file', options.attachedFile);
+      formData.append('session_id', resultingChatId!);
+
+      const uploadHeaders: Record<string, string> = {};
+      if (clientToken) {
+        uploadHeaders['X-Client-Token'] = clientToken;
+      }
+
+      const uploadResponse = await fetch('http://127.0.0.1:8000/api/documents/upload/', {
+        method: 'POST',
+        headers: uploadHeaders, // No Content-Type: browser sets multipart boundary automatically
+        body: formData,
+        signal: options?.signal
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to upload document. Please try again.');
+      }
+
+      const uploadData = await uploadResponse.json();
+      documentId = uploadData.document_id;
+    }
 
     // Delegate generation to the unified AI Service Layer
-    const aiResponse = await aiService.generateChatResponse(message, options);
+    const aiResponse = await aiService.generateChatResponse(message, { 
+      ...options, 
+      chatId: resultingChatId,
+      clientToken: clientToken || undefined,
+      documentId
+    });
 
-    // Update local mock DB with AI response
-    MOCK_MESSAGES_DB[resultingChatId].push(aiResponse);
-
-    return { message: aiResponse, chatId: resultingChatId };
+    return { message: aiResponse, chatId: resultingChatId! };
   },
 
   /**

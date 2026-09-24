@@ -55,30 +55,91 @@ export const aiService = {
   /**
    * ASK Feature: Generate a single chat response
    */
-  generateChatResponse: async (message: string, options?: SendMessageOptions): Promise<ChatMessage> => {
-    // We construct the payload here and pass it down to apiClient
-    const payload = {
-      message,
-      model: options?.currentModel,
-      webSearch: options?.webSearchEnabled,
-      quality: options?.responseQuality,
-      fileId: options?.attachedFile ? (options.attachedFile as any).id : undefined
+  generateChatResponse: async (message: string, options?: SendMessageOptions & { clientToken?: string }): Promise<ChatMessage> => {
+    const payload: any = {
+      session_id: options?.chatId,
+      prompt: message,
+      model_slug: options?.currentModel || 'gpt-4o',
     };
+    
+    if (options?.documentId) {
+      payload.document_id = options.documentId;
+    }
 
-    const mockResponse: ChatMessage = {
-      id: Date.now().toString(),
-      role: 'ai',
-      content: MOCK_AI_RESPONSE,
-      timestamp: new Date().toISOString(),
-      ...(options?.webSearchEnabled && {
-        sources: [
-          { title: 'LinkedIn - React Developer Guide', url: 'https://linkedin.com/pulse/react-guide' },
-          { title: 'Wikipedia - Quantum Physics', url: 'https://en.wikipedia.org/wiki/Quantum' }
-        ]
-      })
-    };
+    try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (options?.clientToken) {
+        headers['X-Client-Token'] = options.clientToken;
+      }
 
-    return apiClient.post('/api/ai/generate', payload, mockResponse, { signal: options?.signal });
+      const response = await fetch('http://127.0.0.1:8000/api/chats/stream/', {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(payload),
+        signal: options?.signal
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate chat response');
+      }
+
+      if (!response.body) {
+        throw new Error('No response body');
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let fullText = '';
+      let messageId = Date.now().toString();
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        const chunkText = decoder.decode(value, { stream: true });
+        const lines = chunkText.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const dataStr = line.slice(6);
+            if (!dataStr.trim()) continue;
+
+            try {
+              const data = JSON.parse(dataStr);
+              if (data.type === 'chunk') {
+                fullText += data.content;
+              } else if (data.type === 'done') {
+                if (data.message_id) {
+                  messageId = data.message_id;
+                }
+              } else if (data.type === 'error') {
+                throw new Error(data.message || 'Stream error');
+              }
+            } catch (e) {
+              console.error("Error parsing chunk:", dataStr);
+            }
+          }
+        }
+      }
+
+      return {
+        id: messageId,
+        role: 'ai',
+        content: fullText,
+        timestamp: new Date().toISOString(),
+        ...(options?.webSearchEnabled && {
+          sources: [
+            { title: 'AI Assistant', url: '#' }
+          ]
+        })
+      };
+
+    } catch (error) {
+      console.error("Chat generation error:", error);
+      throw error;
+    }
   },
 
   /**
@@ -148,19 +209,105 @@ export const aiService = {
   /**
    * VERIFY Feature: Run verification checks on content
    */
-  runVerification: async (options?: { webSearchEnabled?: boolean, signal?: AbortSignal }): Promise<VerificationData> => {
-    const responseData = { ...MOCK_VERIFICATION_DATA };
+  runVerification: async (options?: { 
+    messageId?: string;
+    compareResultId?: number;
+    webSearchEnabled?: boolean;
+    signal?: AbortSignal 
+  }): Promise<VerificationData> => {
+    let endpoint = '';
     
-    if (options?.webSearchEnabled) {
-      responseData.sources = [
-        { title: 'The Eiffel Tower - Official Website', url: 'https://toureiffel.paris', domain: 'toureiffel.paris', icon: 'ShieldCheck' },
-        { title: 'Wikipedia - Eiffel Tower', url: 'https://en.wikipedia.org', domain: 'wikipedia.org', icon: 'W' },
-        { title: 'Paris History Archives', url: 'https://paris.fr', domain: 'paris.fr', icon: 'FileText' }
-      ];
+    // Choose endpoint based on source
+    if (options?.messageId) {
+      endpoint = `/api/verify/from-message/${options.messageId}/`;
+    } else if (options?.compareResultId) {
+      endpoint = `/api/verify/from-compare/${options.compareResultId}/`;
+    } else {
+      // Fallback for UI if navigating without IDs (legacy/mock path)
+      const responseData = { ...MOCK_VERIFICATION_DATA };
+      if (options?.webSearchEnabled) {
+        responseData.sources = [
+          { title: 'The Eiffel Tower - Official Website', url: 'https://toureiffel.paris', domain: 'toureiffel.paris', icon: 'ShieldCheck' },
+          { title: 'Wikipedia - Eiffel Tower', url: 'https://en.wikipedia.org', domain: 'wikipedia.org', icon: 'W' },
+          { title: 'Paris History Archives', url: 'https://paris.fr', domain: 'paris.fr', icon: 'FileText' }
+        ];
+      }
+      return new Promise(resolve => setTimeout(() => resolve(responseData), 1500));
     }
+
+    const payload = { verifying_model_slug: 'gpt-4o' };
     
-    const payload = { options };
-    return apiClient.post('/api/ai/verify', payload, responseData, { signal: options?.signal });
+    try {
+      const response = await fetch(`http://127.0.0.1:8000${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+        signal: options?.signal
+      });
+
+      if (!response.ok) {
+        throw new Error('Verification backend failed');
+      }
+
+      const data = await response.json();
+      
+      // Transform backend Day 9 'verdict' and 'review_output' into VerificationData
+      const verdict = data.verdict;
+      const reviewOutput = data.review_output;
+      
+      const isCorrect = verdict === 'verified';
+      const isPartiallyCorrect = verdict === 'needs_review' || verdict === 'conflicting';
+      const isIncorrect = verdict === 'inaccurate';
+
+      const responseData: VerificationData = {
+        originalAnswer: {
+          model: data.original_model_name || data.verifying_model_name || 'AI Model',
+          text: data.original_answer_text || "Connected to real verification endpoint. The original answer text will be shown here in the future.",
+          sourcesCount: 0
+        },
+        metrics: {
+          totalClaims: 1,
+          correct: isCorrect ? 1 : 0,
+          partiallyCorrect: isPartiallyCorrect ? 1 : 0,
+          incorrect: isIncorrect ? 1 : 0,
+          accuracy: isCorrect ? 100 : 0
+        },
+        claims: [
+          {
+            text: reviewOutput,
+            status: isCorrect ? 'Correct' : isIncorrect ? 'Incorrect' : 'Partially Correct',
+            details: `Backend Verdict: ${verdict.toUpperCase()}`,
+            iconName: isCorrect ? 'CheckCircle2' : isIncorrect ? 'XCircle' : 'AlertTriangle',
+            color: isCorrect ? 'text-emerald-500' : isIncorrect ? 'text-red-500' : 'text-amber-500'
+          }
+        ],
+        keyIssues: isIncorrect ? [
+          {
+            priority: 'High',
+            title: 'Inaccurate Information Found',
+            description: 'The verification model flagged the answer as inaccurate.',
+            iconName: 'XCircle',
+            colorClass: 'text-red-500',
+            bgClass: 'bg-red-50'
+          }
+        ] : [],
+        recommendations: [
+          'Review the verification output provided in the claims above.'
+        ],
+        settings: {
+          verificationModel: data.verifying_model_name || 'gpt-4o',
+          webSearch: options?.webSearchEnabled ? 'Enabled' : 'Disabled',
+          factCheckingLevel: 'Standard'
+        }
+      };
+      
+      return responseData;
+    } catch (error) {
+      console.error("Verification failed:", error);
+      throw error;
+    }
   }
 };
 

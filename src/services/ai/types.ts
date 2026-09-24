@@ -19,6 +19,7 @@ export interface AIResponse {
 }
 
 export interface ComparisonResult {
+  id?: number;
   modelName: string;
   response: string;
   metrics: { label: string; value: string; color: string }[];

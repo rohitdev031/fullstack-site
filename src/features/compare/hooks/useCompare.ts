@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { compareService } from '@/services/compareService';
 import type { ModelDefinition as AIModel } from '@/services/ai/modelRegistry';
 import type { ComparisonResult, CompareAnalysisData } from '@/services/ai/types';
@@ -7,7 +8,9 @@ import { useAppContext } from '@/context/AppContext';
 
 export function useCompare() {
   const { webSearchEnabled } = useAppContext();
-  const [prompt, setPrompt] = useState('What are the most effective strategies for improving productivity while working from home?');
+  const [searchParams] = useSearchParams();
+  const prefillPrompt = searchParams.get('prompt');
+  const [prompt, setPrompt] = useState(prefillPrompt || 'What are the most effective strategies for improving productivity while working from home?');
   const [isComparing, setIsComparing] = useState(false);
   const [allAvailableModels, setAllAvailableModels] = useState<AIModel[]>([]);
   const [selectedModels, setSelectedModels] = useState<AIModel[]>([]);

@@ -6,6 +6,8 @@ import type { VerificationData } from '@/services/ai/types';
 export function useVerify() {
   const location = useLocation();
   const answerToVerify = location.state?.answerToVerify as string | undefined;
+  const messageId = location.state?.messageId as string | undefined;
+  const compareResultId = location.state?.compareResultId as number | undefined;
 
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
   const [mockVerificationData, setMockVerificationData] = useState<VerificationData | null>(null);
@@ -20,7 +22,9 @@ export function useVerify() {
       setIsLoading(true);
       setError(null);
       try {
-        const data = await verifyService.getVerificationResults({ 
+        const data = await verifyService.getVerificationResults({
+          messageId,
+          compareResultId,
           webSearchEnabled, 
           signal: abortController.signal 
         });
@@ -51,7 +55,7 @@ export function useVerify() {
     return () => {
       abortController.abort();
     };
-  }, [webSearchEnabled, answerToVerify]);
+  }, [webSearchEnabled, answerToVerify, messageId, compareResultId]);
 
   return {
     webSearchEnabled,

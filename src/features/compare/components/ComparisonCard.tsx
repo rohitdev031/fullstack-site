@@ -1,12 +1,14 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Copy, ThumbsUp, ThumbsDown, ChevronDown, Check } from 'lucide-react';
+import { Copy, ThumbsUp, ThumbsDown, ChevronDown, Check, ShieldCheck } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { compareService } from '@/services/compareService';
 
 interface ComparisonCardProps {
+  id?: number;
   model: string;
   icon: ReactNode;
   match: string;
@@ -17,7 +19,8 @@ interface ComparisonCardProps {
   className?: string;
 }
 
-export function ComparisonCard({ model, icon, match, matchColor, content, rawContent, sources, className }: ComparisonCardProps) {
+export function ComparisonCard({ id, model, icon, match, matchColor, content, rawContent, sources, className }: ComparisonCardProps) {
+  const navigate = useNavigate();
   const [isCopied, setIsCopied] = useState(false);
   const [rating, setRating] = useState<'up' | 'down' | null>(null);
   const [isSourcesExpanded, setIsSourcesExpanded] = useState(false);
@@ -83,6 +86,11 @@ export function ComparisonCard({ model, icon, match, matchColor, content, rawCon
             <Button onClick={() => handleRate('down')} variant="ghost" size="icon" className={`h-9 w-9 rounded-lg transition-colors ${rating === 'down' ? 'text-destructive bg-destructive/10' : 'text-muted-foreground hover:bg-muted/50'}`}>
               <ThumbsDown className="w-4 h-4" />
             </Button>
+            {id && (
+              <Button onClick={() => navigate('/verify', { state: { compareResultId: id } })} variant="outline" size="sm" className="ml-2 h-9 text-xs rounded-lg font-semibold border-border/60 shadow-xs hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 dark:hover:bg-indigo-900/20">
+                <ShieldCheck className="w-3.5 h-3.5 mr-2" /> Verify
+              </Button>
+            )}
           </div>
           <Button 
             onClick={() => setIsSourcesExpanded(!isSourcesExpanded)}

@@ -1,9 +1,11 @@
 import json
 from django.db import transaction
 from core.ai_providers.mock_provider import MockAIProvider
+from core.ai_providers.factory import get_provider_and_model
 from .models import ChatSession, ChatMessage, AIModel, AnonymousClient
+from apps.documents.models import DocumentFile
 
-def stream_chat_response_service(session_id: str, prompt: str, model_slug: str, client_token: str = None, parent_message_id: str = None):
+def stream_chat_response_service(session_id: str, prompt: str, model_slug: str, client_token: str = None, parent_message_id: str = None, document_id: str = None):
     """
     Generator service that handles message persistence and streams real-time AI responses 
     to the frontend in standard SSE format.
@@ -23,6 +25,22 @@ def stream_chat_response_service(session_id: str, prompt: str, model_slug: str, 
     except ChatSession.DoesNotExist:
         yield from _yield_error("Chat session not found or access denied.")
         return
+
+    # Document Validation and Context Retrieval
+    document_context = ""
+    if document_id:
+        try:
+            document = DocumentFile.objects.get(id=document_id, session=session)
+            if document.processing_status == 'failed':
+                yield from _yield_error("The uploaded document failed to process correctly.")
+                return
+            if document.processing_status != 'completed':
+                yield from _yield_error("The document is still processing. Please wait.")
+                return
+            document_context = document.extracted_text
+        except DocumentFile.DoesNotExist:
+            yield from _yield_error("Document not found or does not belong to this session.")
+            return
 
     try:
         ai_model = AIModel.objects.get(slug=model_slug, is_active=True)
@@ -62,12 +80,17 @@ def stream_chat_response_service(session_id: str, prompt: str, model_slug: str, 
     # Can build standard context array here if needed, passing simple prompt for now.
 
     # 4. Provider Invocation (Using step 1 interface)
-    provider = MockAIProvider()
+    provider, api_model_id = get_provider_and_model(ai_model)
+    
+    # Construct AI Prompt internally
+    ai_prompt = prompt
+    if document_context:
+        ai_prompt = f"Document Context:\n\n{document_context}\n\nUser Question: {prompt}"
     
     # 5. SSE Streaming
     full_response = ""
     try:
-        stream = provider.stream_response(prompt=prompt, model_slug=model_slug)
+        stream = provider.stream_response(prompt=ai_prompt, api_model_id=api_model_id)
         for chunk in stream:
             full_response += chunk
             event_data = {
@@ -76,8 +99,18 @@ def stream_chat_response_service(session_id: str, prompt: str, model_slug: str, 
             }
             yield f"data: {json.dumps(event_data)}\n\n"
             
+        # 6. Final Assistant Message Persistence
+        # Save before emitting done so we can include the UUID
+        assistant_msg = ChatMessage.objects.create(
+            session=session,
+            role='assistant',
+            content=full_response,
+            model_used=ai_model,
+            parent_message=user_message
+        )
+        
         # Stream completed successfully
-        yield f"data: {json.dumps({'type': 'done'})}\n\n"
+        yield f"data: {json.dumps({'type': 'done', 'message_id': str(assistant_msg.id)})}\n\n"
 
     except GeneratorExit:
         # Client disconnected during stream, do not persist assistant message.
@@ -85,18 +118,6 @@ def stream_chat_response_service(session_id: str, prompt: str, model_slug: str, 
     except Exception as e:
         yield from _yield_error(f"Provider streaming error: {str(e)}")
         return
-
-    # 6. Final Assistant Message Persistence
-    try:
-        ChatMessage.objects.create(
-            session=session,
-            role='assistant',
-            content=full_response,
-            model_used=ai_model,
-            parent_message=user_message
-        )
-    except Exception as e:
-        pass
 
 
 def smart_recommendation_service(prompt: str) -> dict:

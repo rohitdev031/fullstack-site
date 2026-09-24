@@ -481,3 +481,285 @@ Answer: We created two specific database tables. First, a `CompareSession` table
 `aether-ai-backend/docs/WORK_LOG.md`
 
 **Update policy:** This file must be updated at the end of every development day with actual technical work done. No assumptions, no placeholder content.
+
+---
+
+## DAY 7 & 8 — COMPARE UI Integration & Reliability
+**Date:** September 16, 2026
+
+### Work Completed
+- Integrated frontend Compare UI with backend Compare API.
+- Implemented useCompare.ts hook for state management.
+- Implemented ComparisonGrid.tsx and ComparisonCard.tsx.
+- Updated compareService.ts to call backend POST /api/compare/run/ instead of returning mock data.
+
+### Technical Concepts Used/Learned
+- **React State Management**: Managing complex async states for multiple models simultaneously.
+- **Error Handling**: Gracefully displaying per-model failures in the UI.
+
+### Testing Done
+- Verified end-to-end Compare initiation from UI.
+- Confirmed sequential execution works reliably across multiple models.
+
+---
+
+## DAY 9, 10 & 11 — VERIFY Core Flow (End-to-End)
+**Date:** September 19, 2026
+
+### Work Completed
+- Created pps/verify Django app.
+- Implemented VerifyResult model (no migrations needed as per rules).
+- Built pps/verify/services.py to handle verification logic (sending answers to a review model).
+- Built VerifyFromMessageView and VerifyFromCompareView in pps/verify/views.py.
+- Registered pps/verify/urls.py.
+- Integrated frontend useVerify.ts and erifyService.ts to connect the UI to the backend endpoints.
+- Connected the full ASK → COMPARE → VERIFY flow end-to-end.
+
+### Technical Concepts Used/Learned
+- **Cross-App Communication**: Verify mode takes inputs from both chats and compare apps.
+- **AI-as-a-Judge**: Using an LLM to evaluate the output of another LLM.
+
+### Testing Done
+- Verified POST /api/verify/from-message/<id>/ returns correctly formatted verification data.
+- Verified POST /api/verify/from-compare/<id>/ returns correctly formatted verification data.
+- E2E flow verified: User asks a question -> compares models -> verifies the best answer.
+
+## Day 12 — File Upload & File Analysis
+**Date:** 2026-09-21
+**Status:** ✅ COMPLETE — All E2E tests passed
+
+---
+
+### Work Completed
+
+#### Step 1 — Backend File Upload Foundation
+- Created `apps/documents/serializers.py` with `DocumentUploadSerializer`.
+  - Validates file type (only `.txt`, `.pdf` allowed).
+  - Validates file size (max 10 MB).
+  - Saves `DocumentFile` linked to the provided `ChatSession`.
+- Implemented `DocumentUploadView` in `apps/documents/views.py`.
+  - Accepts `multipart/form-data` with `file` and `session_id` fields.
+  - Validates session ownership using existing `AnonymousClient` / `X-Client-Token` flow.
+  - Returns only safe fields: `document_id`, `original_name`, `file_size`, `file_type`, `processing_status`.
+- Added the upload route `api/documents/upload/` in `apps/documents/urls.py`.
+- Registered `documents` app URL config in `config/urls.py`.
+
+#### Step 2 — Backend Text Extraction
+- Created `apps/documents/utils.py` with two private extraction functions:
+  - `_extract_text_from_txt(file_path)` — reads UTF-8, falls back to Latin-1.
+  - `_extract_text_from_pdf(file_path)` — uses pre-installed `pypdf` library.
+  - Public entry point: `extract_text_from_file(file_path)` — routes by extension.
+- Updated `DocumentUploadView` to call extraction immediately after file save.
+  - Sets `processing_status = 'processing'` during extraction.
+  - On success: saves `extracted_text` and sets `processing_status = 'completed'`.
+  - On failure: sets `processing_status = 'failed'`, logs the error, does not crash the request.
+
+#### Step 3 — Backend Prompt Context Injection
+- Imported `DocumentFile` model into `apps/chats/services.py`.
+- Updated `stream_chat_response_service()` signature to accept optional `document_id`.
+- After session validation, added document validation block:
+  - Fetches `DocumentFile` only if `document_id` is provided.
+  - Verifies the document belongs to the same `ChatSession` (prevents cross-session access).
+  - Returns a proper streaming SSE error if: document not found, processing failed, or still processing.
+- Built `ai_prompt` internally:
+  - If `document_context` exists: `"Document Context:\n\n{text}\n\nUser Question: {prompt}"`.
+  - If no document: passes the original `prompt` unchanged.
+- Updated `StreamChatResponseView` in `apps/chats/views.py` to accept `document_id` from request body and pass it to the service.
+
+#### Step 4A — Frontend Document Upload
+- Updated `SendMessageOptions` interface in `src/services/chat/chatService.ts` to add optional `documentId?: string`.
+- Inside `sendMessage()`, after session creation, added upload block:
+  - Builds `FormData` with `file` and `session_id`.
+  - Sends `POST /api/documents/upload/` with `X-Client-Token`.
+  - Does NOT manually set `Content-Type` — lets the browser set the multipart boundary automatically.
+  - On failure: throws a descriptive error, handled by existing UI error catch in `useAskChat.ts`.
+  - On success: extracts `document_id` and passes it forward into `aiService.generateChatResponse`.
+
+#### Step 4B — Pass document_id to Chat Stream
+- Updated `generateChatResponse()` in `src/services/ai/aiService.ts`.
+- Changed `payload` type to `any` for dynamic field support.
+- Added conditional: `if (options?.documentId) { payload.document_id = options.documentId; }`.
+- Text-only requests are completely unchanged — no `document_id` is added.
+
+---
+
+### Technical Concepts Used / Learned
+
+- **`multipart/form-data`** — How file uploads work over HTTP. The browser automatically sets the `Content-Type` header with the correct `boundary` string; manually setting it will break the upload.
+- **BOM (`\ufeff`)** — Some text files saved on Windows include a Byte Order Mark at the start. Python's `utf-8-sig` encoding strips it automatically.
+- **Server-Sent Events (SSE)** — The streaming response format used by the backend. Each event is a line starting with `data: ` followed by a JSON string.
+- **`pypdf`** — The pre-installed Python library used for PDF text extraction. Uses `PdfReader` and `page.extract_text()`.
+- **`FormData` in JavaScript** — A browser API to construct multipart form data. Used in `chatService.ts` to build the file upload request.
+- **Context Injection** — The document's extracted text is combined with the user's prompt **server-side**, injected as a prefix, and passed to the AI provider. The frontend never sees the document text.
+
+---
+
+### Architecture / DB / API Decisions
+
+- **`extracted_text` is never exposed to the frontend.** The upload API returns only `document_id`, `original_name`, `file_size`, `file_type`, and `processing_status`.
+- **Document context is injected server-side**, inside `stream_chat_response_service()`. This means even if someone intercepts the SSE stream, they only see the AI response, not the raw document content.
+- **`extracted_text` is NOT stored inside `ChatMessage.content`.** Only the user's original prompt is saved, keeping the history clean.
+- **Extraction is synchronous** for now — it happens immediately after upload. This is acceptable for small files (`.txt`, `.pdf`). For large files in production, this would be moved to a Celery background task.
+- **`document_id` is optional** in both the backend service and the frontend. This guarantees 100% backward compatibility with all existing chat functionality.
+- **Session-scoped document access** — When the frontend sends `document_id`, the backend verifies `DocumentFile.session == ChatSession`. A document from a different session returns an error, preventing unauthorized access.
+
+---
+
+### Problems / Issues
+
+| Problem | How Solved |
+|---|---|
+| Test file had a BOM character (`\ufeff`) which caused `print()` to crash on Windows | Used Python's `utf-8-sig` encoding (strips BOM) for reading, and `io.TextIOWrapper` with `errors='replace'` for the test script stdout |
+| `django.setup()` fails when running scripts from outside the project directory | Used `python manage.py shell -c "..."` instead of standalone scripts |
+| Browser E2E tests blocked (Playwright CDN 404 error) | Replaced with direct API E2E test using the `requests` library, covering all the same assertions |
+| Extraction might fail silently | Added `try/except` in the view — on error, `processing_status` is set to `'failed'` and a clear error message is returned when the user tries to use that document |
+
+---
+
+### Testing
+
+| Test | Method | Result |
+|---|---|---|
+| File Upload (`POST /api/documents/upload/`) | `requests` library, direct API call | ✅ PASS — 201, `document_id` returned, no `extracted_text` in response |
+| File-based ASK (`document_id` injected into stream) | `requests` library, streaming SSE | ✅ PASS — Document context confirmed in AI prompt prefix |
+| Normal ASK (no file) | `requests` library, streaming SSE | ✅ PASS — Existing prompt sent unchanged, `document_id` absent |
+| Chat History (`GET /api/chats/sessions/<id>/history/`) | `requests` library, direct API call | ✅ PASS — Messages contain only user prompts, no `extracted_text` leak |
+| Cross-session document access | Unit test in `manage.py shell` | ✅ PASS — Returns `"Document not found or does not belong to this session."` |
+| Failed extraction document | Unit test in `manage.py shell` | ✅ PASS — Returns `"The uploaded document failed to process correctly."` |
+| `python manage.py check` | Django system check | ✅ 0 issues |
+| TypeScript build check | `npx tsc --noEmit` | ✅ 0 errors |
+
+---
+
+### Important Things I Should Understand
+
+1. **Why is `Content-Type` NOT set manually for file uploads?**
+   When using `FormData`, the browser automatically adds the `Content-Type: multipart/form-data; boundary=...` header with the correct `boundary`. If you manually set `Content-Type: multipart/form-data` without the boundary, the server cannot parse the body and the upload fails.
+
+2. **Why is `extracted_text` never returned to the frontend?**
+   Security and efficiency. The document may contain sensitive information. The frontend only needs to know the upload succeeded (via `document_id`). The actual content is only used server-side, internally.
+
+3. **Where is the document context added?**
+   In `apps/chats/services.py`, inside `stream_chat_response_service()`. It builds a formatted string: `"Document Context:\n\n{text}\n\nUser Question: {prompt}"` and passes it as `ai_prompt` to the provider.
+
+4. **What happens if the user sends `document_id` without a file ever being uploaded?**
+   The backend does `DocumentFile.objects.get(id=document_id, session=session)` — if it doesn't exist or belongs to a different session, it returns an SSE error event. The request never reaches the AI provider.
+
+5. **Why is the user message saved with only the original prompt, not the context?**
+   Because `ChatMessage.content` is populated from the `prompt` argument, which is the user's original text. The `ai_prompt` (with context appended) is only used to call the provider — it is not persisted. This keeps the chat history readable.
+
+---
+
+### Possible Interview Questions & Simple English Answers
+
+**Q: How does your file upload work?**
+> The user picks a file in the frontend. When they send a message, the frontend first calls `POST /api/documents/upload/` with the file and the session ID. The backend validates the file, saves it to disk, extracts the text, and stores it in the database. It returns a `document_id` to the frontend. Then the frontend includes that `document_id` in the chat stream request.
+
+**Q: Why doesn't the frontend receive the extracted text?**
+> Because we don't want to expose the document content to the browser. The backend uses the stored text internally to build the AI prompt. The frontend only needs the `document_id` — a reference — not the actual content.
+
+**Q: What is `multipart/form-data` and when do you use it?**
+> It is an HTTP encoding format used for uploading files. When you want to send both text fields and binary file data in a single HTTP request, you use `multipart/form-data`. Each "part" has its own content type and is separated by a boundary string. Regular JSON requests can't handle raw file bytes.
+
+**Q: How do you prevent one user from accessing another user's documents?**
+> When the stream request arrives with a `document_id`, the backend fetches the `DocumentFile` using both the `id` AND the `session` together: `DocumentFile.objects.get(id=document_id, session=session)`. The `session` itself is already validated against the `X-Client-Token` of the requesting user. So if the document belongs to a different session, the query finds nothing and returns an error.
+
+**Q: What is context injection in an AI system?**
+> Context injection means adding extra information to the AI's prompt so it can answer questions about it. In our case, instead of sending just the user's question, the backend builds a bigger prompt that includes the document text first, then the user's question. The AI reads both and answers based on the document.
+
+**Q: How does your system handle a failed extraction?**
+> During upload, if text extraction throws an exception, the backend sets `processing_status = 'failed'` and saves the `DocumentFile` without `extracted_text`. Later, if the user tries to ask a question with that `document_id`, the backend checks the status and returns a clear error: `"The uploaded document failed to process correctly."` The stream never reaches the AI provider.
+
+**Q: What is a BOM and why can it cause issues?**
+> BOM stands for Byte Order Mark. It is an invisible character (`\ufeff`) that some programs (like Windows Notepad) put at the very beginning of UTF-8 text files to indicate the encoding. If your code reads the file without stripping it, the BOM appears as a garbage character in the extracted text. Python's `utf-8-sig` encoding automatically removes it.
+
+---
+
+### Pending / Next Work
+
+- **Day 13** — Conversation hardening: proper session management, error recovery, and edge case handling across ASK, Compare, and Verify flows.
+- **Future** — Move file extraction to a Celery background task for large files (currently synchronous, acceptable for small files).
+- **Future** — Support additional file types (`.docx`, `.csv`, `.png` via OCR).
+- **Future (Day 14)** — Replace `AllowAny` with `IsAuthenticated` across all API endpoints.
+- **Future** — Add file size/type validation on the frontend (before upload) to give instant user feedback.
+
+---
+
+## DAY 14 — Hardening & Reliability Review
+**Date:** September 21, 2026
+
+### Work Completed
+- Conducted a comprehensive hardening and reliability review across the entire codebase.
+- Reviewed streaming interruption handling (`GeneratorExit` aborts successfully).
+- Reviewed AI/provider failure handling (fails safely without database corruption).
+- Reviewed Verify edge cases (`get_object_or_404` and `ValueError` mapping handles missing parents).
+- Reviewed file upload validation (10MB size limit) and extraction failures (`processing_status = 'failed'`).
+- Reviewed anonymous client/token ownership.
+- Reviewed cross-session access protection (`session__anonymous_client` DB filters).
+- Reviewed empty/malformed requests (frontend and backend 400 validations).
+- Reviewed frontend race-condition handling (`AbortController`).
+- Identified a critical Compare performance issue in the actual code (sequential model execution).
+- Implemented `ThreadPoolExecutor` concurrency in `run_compare_service` to run AI calls in parallel.
+- Added duplicate model slug handling in Compare.
+- Preserved per-model failure isolation and added/verified 15-second provider timeout handling.
+- Kept DB writes strictly sequential outside worker threads to prevent lock contention.
+- Completed full regression testing across ASK, Compare, Verify, Files, Conversation and Security using automated API tests.
+- Confirmed zero genuine application failures remain.
+
+### Technical Concepts Used/Learned
+- **Concurrent Futures / ThreadPoolExecutor**: Used to parallelize I/O bound tasks (like API calls). This reduces latency from O(N) to O(1), limited only by the slowest external API call instead of the sum of all calls.
+- **Deduplication while Preserving Order**: Using an explicit loop and array to remove duplicates guarantees we don't accidentally query the same AI model twice while maintaining user-requested order.
+- **Future Timeouts**: Using `future.result(timeout=15)` explicitly caps execution time. If an AI provider hangs indefinitely, the app doesn't lock up — it catches `TimeoutError` and gracefully fails that specific result.
+- **Thread Safety in Django ORM**: Django ORM can be thread-safe for basic operations, but keeping DB writes sequentially on the main thread (after gathering results) guarantees we avoid SQLite locking or transaction overlapping risks.
+- **Security Boundary Testing**: Hardening isn't just about crashes; it's about validating that resources belong to the requesting user and ensuring cross-session hijacking returns 404s, not 403s.
+
+### Architecture / Database / API Decisions
+- **Why fix performance in Hardening phase?** Hardening usually focuses on stability and security, but a feature that blocks for O(N) time across external networks is a DOS vector and reliability risk. Fixing Compare sequential execution was a direct reliability improvement.
+- **Why was `ThreadPoolExecutor` chosen over `asyncio`?** The current Django views and mock providers are strictly synchronous. Mixing `async/await` into a deeply synchronous Django 5 stack introduces massive refactoring risks. `ThreadPoolExecutor` is the cleanest, least invasive way to parallelize blocking I/O calls in a synchronous Python function.
+
+### Problems / Issues
+- The Compare service originally looped through models one by one sequentially.
+- The `model_slugs` input allowed duplicate slugs which would run identical API calls twice.
+- Test client headers sent `testserver` hostnames resulting in DisallowedHost errors during API testing.
+
+### How They Were Solved
+- Rewrote the Compare service to dispatch `provider.generate_response` inside a `ThreadPoolExecutor`.
+- Stripped duplicate slugs explicitly before querying AI models.
+- Resolved test environment issues by configuring `APIClient(SERVER_NAME='localhost')` and using real UUID structures.
+
+### Testing Done
+- Ran full regression validation across ASK (stream/empty prompts).
+- Verified Compare parallel execution, duplicate handling, and single-model failure isolation.
+- Verified Verify missing sources and edge cases.
+- Verified cross-session File upload and access limitations.
+- Verified token-ownership validations.
+
+### Important Things I Should Understand
+- System reliability involves graceful degradation. If you ask for 4 AI models and 1 fails, the user should receive the 3 successful ones. The system should bend, not break.
+- Regression testing is crucial when making concurrency changes to ensure existing features (like DB saving and error mapping) still behave deterministically.
+
+### Possible Interview Questions
+
+**Q: In Python, when would you use `ThreadPoolExecutor` versus `asyncio` for concurrency?**
+> `asyncio` is great for highly concurrent systems, but it requires the entire call stack (from the view down to the DB queries and HTTP requests) to be asynchronous. If you are working in an existing synchronous Django application, introducing `async` can be risky and invasive. `ThreadPoolExecutor` allows you to spin up threads to handle blocking I/O tasks (like making external API calls) simultaneously, while keeping the main program flow synchronous and simple to reason about.
+
+**Q: How did you optimize the performance of the Compare feature?**
+> Originally, it ran each AI model sequentially in a `for` loop. If 4 models were requested and each took 3 seconds, the user waited 12 seconds. I identified this as a bottleneck and rewrote the service to use `concurrent.futures.ThreadPoolExecutor`. Now, all 4 models are queried at the exact same time. The user only waits 3 seconds, and the results are then persisted to the database.
+
+**Q: How does your system handle AI provider timeouts or crashes during a comparison?**
+> The worker function wraps the AI call in a `try/except` block and uses `future.result(timeout=15)`. If the provider crashes or hangs past 15 seconds, that specific future catches the error and returns a status of `failed`. Because the database writes are handled separately, the other successful models are saved normally, and the user receives a partial success instead of a broken page.
+
+### Pending / Next Work
+- Prepare for production deployment.
+- Authentication/JWT swap for anonymous clients.
+
+---
+
+## Final Handover Status
+
+- **Architecture:** Provider Factory architecture is completely implemented for OpenAI, Gemini, and Anthropic.
+- **Integration:** The ASK, Compare, and Verify flows are fully integrated with the centralized provider factory.
+- **Testing:** Local mock mode (`USE_MOCK_AI=True`) testing has been successfully completed. All backend tests pass successfully.
+- **Real APIs:** Actual external API calls cannot be fully verified locally without valid keys. However, the system is fully configured to route requests to official SDKs (OpenAI, Google GenAI, Anthropic) when `USE_MOCK_AI=False`.
+- **Configuration:** To enable real APIs, simply set `USE_MOCK_AI=False` and provide the required API keys in the `.env` file. If a required key is missing, an `ImproperlyConfigured` error is strictly raised.
+- **No Code Changes Needed:** No application code changes are required just to configure and use valid provider APIs. Simply configure the environment variables correctly.

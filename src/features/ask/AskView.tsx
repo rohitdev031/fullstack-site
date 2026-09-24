@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { chatService } from '@/services/chat/chatService';
 import { useAskChat } from './hooks/useAskChat';
 import { useChatSuggestions } from './hooks/useChatSuggestions';
 import { AskControls } from './components/AskControls';
@@ -66,7 +67,13 @@ export function AskView() {
             <AskEmptyState
               suggestions={suggestions}
               error={suggestionsError}
-              onSuggestionClick={(text) => handleSubmit(text)}
+              onSuggestionClick={async (text) => {
+                const recommendedModel = await chatService.recommendModel(text);
+                if (recommendedModel) {
+                  setCurrentModel(recommendedModel);
+                }
+                handleSubmit(text, recommendedModel || undefined);
+              }}
             />
           ) : (
             <ChatMessageList
